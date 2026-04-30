@@ -553,3 +553,27 @@ html, body {
 }
 
 #mz-west .mzone-vert { transform: rotate(180deg); }
+
+/* ── DIRECTION BUTTONS ─────────────────── */
+.dir-btn {
+  flex-shrink: 0;
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(150,120,255,0.1);
+  color: rgba(154,122,255,0.4);
+  font-family: Georgia, serif;
+  font-size: 11px;
+  letter-spacing: 1px;
+  padding: 5px 0;
+  cursor: pointer;
+  text-align: center;
+  transition: color 0.1s, background 0.1s;
+  -webkit-tap-highlight-color: transparent;
+}
+.dir-btn:active {
+  color: var(--accent2);
+  background: rgba(154,122,255,0.06);
+}
+#dir-north { border-bottom: 1px solid rgba(150,120,255,0.1); border-top: none; }
+#dir-south { border-top: 1px solid rgba(150,120,255,0.1); border-bottom: none; }

@@ -4,7 +4,7 @@
 
 import { connect, sendText } from './client.js';
 import { showAuth }          from './auth.js';
-import { closeCtx, log }     from './render.js';
+import { closeCtx }          from './render.js';
 
 // ── ITEMS ─────────────────────────────────────────────────
 fetch('items.json')
@@ -32,18 +32,10 @@ function doSend() {
 chatSend.addEventListener('click', doSend);
 chatIn.addEventListener('keydown', e => { if (e.key === 'Enter') doSend(); });
 
-// ── DPAD BUTTONS ──────────────────────────────────────────
-document.querySelectorAll('.dpad-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const dir = btn.dataset.dir;
-    if (dir) sendText(dir);
-  });
-});
-
-// ── WEST / EAST EDGE ZONES ────────────────────────────────
-document.querySelectorAll('.mzone').forEach(z => {
-  z.addEventListener('click', () => {
-    const dir = z.dataset.dir;
+// ── DIRECTION BUTTONS (north/south inline, west/east edge) ─
+document.querySelectorAll('.dir-btn, .mzone').forEach(el => {
+  el.addEventListener('click', () => {
+    const dir = el.dataset.dir;
     if (dir) sendText(dir);
   });
 });
@@ -68,14 +60,18 @@ document.getElementById('hand-r').addEventListener('click', () => sendText('hand
 // ── CLOSE CTX ON LOG TAP ─────────────────────────────────
 document.getElementById('log').addEventListener('click', closeCtx);
 
-// ── UPDATE DPAD DIM STATE ─────────────────────────────────
+// ── UPDATE DIRECTION BUTTONS ──────────────────────────────
 // Called by render.js after each room load
 window.updateDpad = function(exits) {
-  ['north','south','east','west'].forEach(dir => {
-    // dpad buttons
-    const btn = document.getElementById('dpad-' + dir);
-    if (btn) btn.classList.toggle('dim', !exits.includes(dir));
-    // edge zones (west/east only)
+  // north/south — show/hide inline buttons
+  ['north','south'].forEach(dir => {
+    const btn = document.getElementById('dir-' + dir);
+    if (!btn) return;
+    if (exits.includes(dir)) btn.classList.remove('hidden');
+    else btn.classList.add('hidden');
+  });
+  // west/east — dim edge zones
+  ['west','east'].forEach(dir => {
     const zone = document.getElementById('mz-' + dir);
     if (zone) zone.classList.toggle('dim', !exits.includes(dir));
   });
