@@ -651,3 +651,10 @@ html, body {
   letter-spacing: 1px;
 }
 #mz-west.dim span, #mz-east.dim span { opacity: 0.1; }
+
+/* ── WEST/EAST FONT MATCH ──────────────── */
+#mz-west span, #mz-east span {
+  font-family: Georgia, 'Times New Roman', serif !important;
+  font-size: 11px !important;
+  letter-spacing: 1px !important;
+}
