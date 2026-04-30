@@ -159,7 +159,6 @@ export function clearRoom() {
 // ── MOVEMENT ZONES ───────────────────────────────────────
 function setZones(exits) {
   window.updateDpad?.(exits);
-});
 }
 
 // ── UTIL ─────────────────────────────────────────────────
