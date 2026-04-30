@@ -686,3 +686,10 @@ html, body {
   display: block !important;
   visibility: hidden;
 }
+
+/* ── WEST/EAST NO ROTATION ─────────────── */
+#mz-west span, #mz-east span {
+  writing-mode: horizontal-tb !important;
+  transform: none !important;
+  text-align: center;
+}
