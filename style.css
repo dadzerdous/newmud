@@ -639,3 +639,15 @@ html, body {
 #mz-west.dim::before, #mz-east.dim::before {
   opacity: 0.12;
 }
+
+/* ── WEST/EAST TEXT FIX ────────────────── */
+#mz-west::before, #mz-east::before { content: none; }
+#mz-west span, #mz-east span {
+  display: block !important;
+  color: var(--text) !important;
+  opacity: 0.5;
+  text-shadow: none;
+  font-size: 10px;
+  letter-spacing: 1px;
+}
+#mz-west.dim span, #mz-east.dim span { opacity: 0.1; }
