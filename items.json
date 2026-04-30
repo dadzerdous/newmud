@@ -1,0 +1,108 @@
+{
+  "rock": {
+    "id": "rock",
+    "name": "Rock",
+    "emoji": "🪨",
+    "category": "weapon",
+    "slot": "hand",
+    "hands": 1,
+    "stackable": false,
+    "unique": false,
+    "visible": true,
+    "stealable": true,
+    "throwable": true,
+    "returns": false,
+
+    "weapon": {
+      "class": "blunt",
+      "range": "melee",
+      "baseDamage": 1,
+      "element": "earth"
+    },
+
+    "progression": {
+      "level": 1,
+      "exp": 0,
+      "skills": [],
+      "lockedSkills": ["throw"]
+    },
+
+    "variations": {
+      "races": ["goblin", "human", "elf"]
+    },
+
+    "textByRace": {
+      "goblin": "Food or weapon.",
+      "human": "It's a rock.",
+      "elf": "It hums faintly."
+    }
+  },
+
+  "twig": {
+    "id": "twig",
+    "name": "Twig",
+    "emoji": "🌿",
+    "category": "tool",
+    "slot": "hand",
+    "hands": 1,
+    "stackable": true,
+    "unique": false,
+    "visible": true,
+    "stealable": true,
+    "throwable": false,
+    "returns": false,
+
+    "weapon": null,
+
+    "progression": {
+      "level": 1,
+      "exp": 0,
+      "skills": [],
+      "lockedSkills": []
+    },
+
+    "variations": {
+      "races": ["goblin", "human"]
+    },
+
+    "textByRace": {
+      "goblin": "Dry enough to burn. Maybe sharp enough to poke.",
+      "human": "A small twig.",
+      "elf": "Once part of something living."
+    }
+  },
+
+  "ancient_key": {
+    "id": "ancient_key",
+    "name": "Ancient Key",
+    "emoji": "🗝️",
+    "category": "quest",
+    "slot": "none",
+    "hands": 0,
+    "stackable": false,
+    "unique": true,
+    "visible": true,
+    "stealable": false,
+    "throwable": false,
+    "returns": false,
+
+    "weapon": null,
+
+    "progression": {
+      "level": 1,
+      "exp": 0,
+      "skills": [],
+      "lockedSkills": []
+    },
+
+    "variations": {
+      "races": ["goblin", "human", "elf"]
+    },
+
+    "textByRace": {
+      "goblin": "Shiny. Important. Probably cursed.",
+      "human": "An old key, worn by time.",
+      "elf": "This lock remembers you."
+    }
+  }
+}
