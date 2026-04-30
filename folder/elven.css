@@ -1,0 +1,14 @@
+/* themes/elven.css */
+:root {
+  --bg:      #06080e;
+  --surf:    #0c1018;
+  --surf2:   #121820;
+  --border:  rgba(100,140,220,0.13);
+  --border2: rgba(100,140,220,0.32);
+  --accent:  #6090dd;
+  --accent2: #90b8ff;
+  --text:    #d4dcff;
+  --muted:   #506080;
+  --dim:     #182030;
+  --gold:    #aaccff;
+}
