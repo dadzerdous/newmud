@@ -158,11 +158,8 @@ export function clearRoom() {
 
 // ── MOVEMENT ZONES ───────────────────────────────────────
 function setZones(exits) {
-  ['north','south','east','west'].forEach(dir => {
-    const el = document.getElementById('mz-' + dir);
-    if (!el) return;
-    el.classList.toggle('dim', !exits.includes(dir));
-  });
+  window.updateDpad?.(exits);
+});
 }
 
 // ── UTIL ─────────────────────────────────────────────────

@@ -489,3 +489,67 @@ html, body {
   background: var(--accent);
   color: #000;
 }
+
+/* ── DPAD ──────────────────────────────── */
+#dpad {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: center;
+  padding: 6px 0 4px;
+  border-top: 1px solid rgba(150,120,255,0.08);
+}
+
+#dpad-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.dpad-row {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.dpad-btn {
+  width: 44px;
+  height: 36px;
+  background: #14122a;
+  border: 1px solid rgba(150,120,255,0.28);
+  border-radius: 8px;
+  color: var(--accent2);
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.1s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.dpad-btn:active { background: var(--accent); color: #000; }
+.dpad-btn.dim    { opacity: 0.2; pointer-events: none; }
+
+.dpad-center {
+  width: 44px;
+  height: 36px;
+}
+
+/* remove old north/south zone styles that no longer apply */
+#mz-north, #mz-south { display: none; }
+
+#mz-west, #mz-east {
+  top: calc(var(--hud-h) + 10px);
+  bottom: calc(var(--bot-h) + 10px);
+}
+
+.mzone-vert {
+  writing-mode: vertical-rl;
+  font-size: 9px;
+  color: rgba(154,122,255,0.3);
+  letter-spacing: 1px;
+  pointer-events: none;
+}
+
+#mz-west .mzone-vert { transform: rotate(180deg); }

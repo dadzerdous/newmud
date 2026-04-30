@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>2MuddyGob</title>
+  <title>MuddyGob</title>
   <link rel="stylesheet" href="style.css">
-  <link id="theme-css" rel="stylesheet" href="themes/default.css">
+  <link id="theme-css" rel="stylesheet" href="" onerror="this.removeAttribute('href')">
 </head>
 <body>
 
@@ -33,11 +33,9 @@
     </div>
   </div>
 
-  <!-- Movement zones — tap edges to move -->
-  <div class="mzone" id="mz-north" data-dir="north"><span>north</span></div>
-  <div class="mzone" id="mz-south" data-dir="south"><span>south</span></div>
-  <div class="mzone" id="mz-west"  data-dir="west"><span>west</span></div>
-  <div class="mzone" id="mz-east"  data-dir="east"><span>east</span></div>
+  <!-- West/East edge zones only — subtle tap areas -->
+  <div class="mzone" id="mz-west" data-dir="west"><span class="mzone-vert">west</span></div>
+  <div class="mzone" id="mz-east" data-dir="east"><span class="mzone-vert">east</span></div>
 
   <!-- Room content — static top, scrolling log bottom -->
   <div id="room">
@@ -59,6 +57,23 @@
 
     <div id="log-divider"></div>
     <div id="log"></div>
+
+    <!-- D-pad row — sits between log and input -->
+    <div id="dpad">
+      <div id="dpad-inner">
+        <div class="dpad-row">
+          <button class="dpad-btn" id="dpad-north" data-dir="north">↑</button>
+        </div>
+        <div class="dpad-row">
+          <button class="dpad-btn" id="dpad-west"  data-dir="west">←</button>
+          <div class="dpad-center"></div>
+          <button class="dpad-btn" id="dpad-east"  data-dir="east">→</button>
+        </div>
+        <div class="dpad-row">
+          <button class="dpad-btn" id="dpad-south" data-dir="south">↓</button>
+        </div>
+      </div>
+    </div>
 
     <div id="input-bar">
       <select id="chat-mode">

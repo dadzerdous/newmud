@@ -12,7 +12,7 @@ fetch('items.json')
   .then(d => { window.worldItems = d; })
   .catch(() => { window.worldItems = {}; });
 
-// ── WELCOME BUTTONS ───────────────────────────────────────
+// ── WELCOME ───────────────────────────────────────────────
 document.getElementById('btn-new').addEventListener('click',   () => showAuth('create'));
 document.getElementById('btn-login').addEventListener('click', () => showAuth('login'));
 
@@ -32,7 +32,15 @@ function doSend() {
 chatSend.addEventListener('click', doSend);
 chatIn.addEventListener('keydown', e => { if (e.key === 'Enter') doSend(); });
 
-// ── MOVEMENT ZONES ────────────────────────────────────────
+// ── DPAD BUTTONS ──────────────────────────────────────────
+document.querySelectorAll('.dpad-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const dir = btn.dataset.dir;
+    if (dir) sendText(dir);
+  });
+});
+
+// ── WEST / EAST EDGE ZONES ────────────────────────────────
 document.querySelectorAll('.mzone').forEach(z => {
   z.addEventListener('click', () => {
     const dir = z.dataset.dir;
@@ -40,7 +48,7 @@ document.querySelectorAll('.mzone').forEach(z => {
   });
 });
 
-// Arrow keys (keyboard users / desktop)
+// ── KEYBOARD ──────────────────────────────────────────────
 document.addEventListener('keydown', e => {
   if (document.activeElement === chatIn) return;
   const dirs = { ArrowUp:'north', ArrowDown:'south', ArrowLeft:'west', ArrowRight:'east' };
@@ -54,12 +62,24 @@ document.getElementById('btn-quit').addEventListener('click', () => {
   sendText('quit');
 });
 
-// ── HANDS ─────────────────────────────────────────────────
 document.getElementById('hand-l').addEventListener('click', () => sendText('hands'));
 document.getElementById('hand-r').addEventListener('click', () => sendText('hands'));
 
 // ── CLOSE CTX ON LOG TAP ─────────────────────────────────
 document.getElementById('log').addEventListener('click', closeCtx);
 
-// ── GO ────────────────────────────────────────────────────
+// ── UPDATE DPAD DIM STATE ─────────────────────────────────
+// Called by render.js after each room load
+window.updateDpad = function(exits) {
+  ['north','south','east','west'].forEach(dir => {
+    // dpad buttons
+    const btn = document.getElementById('dpad-' + dir);
+    if (btn) btn.classList.toggle('dim', !exits.includes(dir));
+    // edge zones (west/east only)
+    const zone = document.getElementById('mz-' + dir);
+    if (zone) zone.classList.toggle('dim', !exits.includes(dir));
+  });
+};
+
+// ── CONNECT ───────────────────────────────────────────────
 connect();
