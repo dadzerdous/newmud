@@ -2,16 +2,15 @@
 // client.js — WebSocket + routing
 // ════════════════════════════════════════
 
-import { renderRoom, log, clearRoom }       from './render.js';
-import { updateHUD, setHeld }               from './hud.js';
-import { hideAuth, applyTheme, bindAuth }   from './auth.js';
-import { MockSocket }                       from './mock.js';
+import { renderRoom, log, clearRoom }     from './render.js';
+import { updateHUD, setHeld }             from './hud.js';
+import { hideAuth, applyTheme, bindAuth } from './auth.js';
+import { MockSocket }                     from './mock.js';
 
 const WS_URL  = 'wss://muddygob-server-1.onrender.com';
 
 // ┌─────────────────────────────────────────────────────┐
-// │  MOCK MODE — set to true to develop offline         │
-// │  Set to false when your real server is running      │
+// │  MOCK MODE — true = offline dev, false = real server│
 // └─────────────────────────────────────────────────────┘
 const USE_MOCK = true;
 
@@ -23,20 +22,20 @@ let manualExit = false;
 export function connect() {
   ws = USE_MOCK ? new MockSocket() : new WebSocket(WS_URL);
 
-  ws.onopen = () => {
+  ws.addEventListener('open', () => {
     setConn('● online');
     const tok = localStorage.getItem('mg_token');
     if (tok) send({ type: 'resume', token: tok });
-  };
+  });
 
-  ws.onclose = () => {
+  ws.addEventListener('close', () => {
     setConn('○ offline');
     if (!manualExit) setTimeout(connect, 2500);
-  };
+  });
 
-  ws.onerror = () => setConn('✕ error');
+  ws.addEventListener('error', () => setConn('✕ error'));
 
-  ws.onmessage = ({ data: raw }) => {
+  ws.addEventListener('message', ({ data: raw }) => {
     if (raw === 'manual_exit') {
       manualExit = true;
       localStorage.removeItem('mg_token');
@@ -50,14 +49,13 @@ export function connect() {
     catch { log(raw, 'll-sys'); return; }
 
     route(pkt);
-  };
+  });
 }
 
 // ── SEND ─────────────────────────────────────────────────
-export function send(obj)  { ws?.readyState === 1 && ws.send(JSON.stringify(obj)); }
-export function sendText(t){ ws?.readyState === 1 && ws.send(t); }
+export function send(obj)   { ws?.readyState === 1 && ws.send(JSON.stringify(obj)); }
+export function sendText(t) { ws?.readyState === 1 && ws.send(t); }
 
-// Expose for render.js (avoids circular import)
 window.sendText = sendText;
 
 // ── ROUTE ─────────────────────────────────────────────────
@@ -120,7 +118,6 @@ bindAuth(
   (loginId, pass)             => send({ type:'try_login', login:loginId, password:pass })
 );
 
-// ── HELPERS ──────────────────────────────────────────────
 function setConn(txt) {
   const el = document.getElementById('hud-conn');
   if (el) el.textContent = txt;
