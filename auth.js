@@ -14,10 +14,21 @@ let _mode     = 'create';
 let _race     = null;
 let _pronoun  = null;
 
-// ── PUBLIC ───────────────────────────────────────────────
+function dbg(msg) {
+  let el = document.getElementById('_dbg');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = '_dbg';
+    el.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#ff0;color:#000;font-size:13px;padding:6px 10px;z-index:99999;font-family:monospace;white-space:pre-wrap;';
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+}
+
 export function bindAuth(onCreate, onLogin) {
   _onCreate = onCreate;
   _onLogin  = onLogin;
+  dbg('bindAuth called ✓');
 }
 
 export function showAuth(mode) {
@@ -28,25 +39,24 @@ export function showAuth(mode) {
   document.getElementById('modal-title').textContent =
     mode === 'create' ? 'Create a Being' : 'Login';
 
-  document.getElementById('a-name').value  = '';
-  document.getElementById('a-pass').value  = '';
-  document.getElementById('a-err').textContent = '';
+  document.getElementById('a-name').value       = '';
+  document.getElementById('a-pass').value       = '';
+  document.getElementById('a-err').textContent  = '';
 
   document.querySelectorAll('.choice').forEach(b => b.classList.remove('on'));
 
-  // Show race+pronoun for both modes (needed for login ID)
-  document.getElementById('race-label').style.display    = '';
-  document.getElementById('race-choices').style.display  = '';
-  document.getElementById('pronoun-label').style.display = '';
+  document.getElementById('race-label').style.display      = '';
+  document.getElementById('race-choices').style.display    = '';
+  document.getElementById('pronoun-label').style.display   = '';
   document.getElementById('pronoun-choices').style.display = '';
 
-  // Reset pronoun visibility
   document.querySelectorAll('[data-val]').forEach(b => {
     if (b.closest('#pronoun-choices')) b.style.display = '';
   });
 
   document.getElementById('welcome').classList.add('hidden');
   document.getElementById('overlay').classList.remove('hidden');
+  dbg(`showAuth(${mode}) — race:${_race} pronoun:${_pronoun}`);
 }
 
 export function hideAuth() {
@@ -56,19 +66,17 @@ export function hideAuth() {
 }
 
 export function applyTheme(race) {
-  const map = { goblin:'goblin', elf:'elven', human:'human' };
+  const map  = { goblin:'goblin', elf:'elven', human:'human' };
   const link = document.getElementById('theme-css');
   if (link) link.href = `themes/${map[race] ?? 'default'}.css`;
 }
 
-// ── RACE / PRONOUN ────────────────────────────────────────
+// ── RACE ─────────────────────────────────────────────────
 document.querySelectorAll('#race-choices .choice').forEach(btn => {
   btn.addEventListener('click', () => {
     _race = btn.dataset.val;
     document.querySelectorAll('#race-choices .choice').forEach(b => b.classList.remove('on'));
     btn.classList.add('on');
-
-    // Filter pronouns
     const allowed = RACE_PRONOUNS[_race] ?? [];
     _pronoun = null;
     document.querySelectorAll('#pronoun-choices .choice').forEach(b => {
@@ -76,46 +84,55 @@ document.querySelectorAll('#race-choices .choice').forEach(btn => {
       b.style.display = show ? '' : 'none';
       if (!show) b.classList.remove('on');
     });
+    dbg(`race=${_race}`);
   });
 });
 
+// ── PRONOUN ───────────────────────────────────────────────
 document.querySelectorAll('#pronoun-choices .choice').forEach(btn => {
   btn.addEventListener('click', () => {
     _pronoun = btn.dataset.val;
     document.querySelectorAll('#pronoun-choices .choice').forEach(b => b.classList.remove('on'));
     btn.classList.add('on');
+    dbg(`race=${_race} pronoun=${_pronoun}`);
   });
 });
 
-// ── CONFIRM ──────────────────────────────────────────────
-document.getElementById('a-confirm').addEventListener('click', () => {
+// ── CONFIRM ───────────────────────────────────────────────
+function doConfirm() {
   const name = document.getElementById('a-name').value.trim();
   const pass = document.getElementById('a-pass').value.trim();
   const err  = document.getElementById('a-err');
 
-  err.textContent = '';
+  dbg(`confirm: name="${name}" pass="${pass.length}chars" race=${_race} pronoun=${_pronoun} mode=${_mode}`);
 
-  if (name.length < 3)  { err.textContent = 'Name must be at least 3 characters.'; return; }
-  if (pass.length < 4)  { err.textContent = 'Password must be at least 4 characters.'; return; }
-  if (!_race)           { err.textContent = 'Choose a race.'; return; }
-  if (!_pronoun)        { err.textContent = 'Choose pronouns.'; return; }
+  err.style.cssText = 'color:#ff4040;font-size:13px;text-align:center;padding:4px;';
+  err.textContent   = '';
+
+  if (name.length < 3)  { err.textContent = `Name too short (${name.length} chars, need 3)`; return; }
+  if (pass.length < 4)  { err.textContent = `Password too short (${pass.length} chars, need 4)`; return; }
+  if (!_race)           { err.textContent = 'Pick a race first'; return; }
+  if (!_pronoun)        { err.textContent = 'Pick pronouns first'; return; }
+
+  dbg(`sending ${_mode}...`);
 
   if (_mode === 'create') {
     _onCreate?.(name, pass, _race, _pronoun);
   } else {
     _onLogin?.(`${name.toLowerCase()}@${_race}.${_pronoun}`, pass);
   }
+}
+
+document.getElementById('a-confirm').addEventListener('click', doConfirm);
+
+['a-name','a-pass'].forEach(id => {
+  document.getElementById(id).addEventListener('keydown', e => {
+    if (e.key === 'Enter') doConfirm();
+  });
 });
 
 // ── CANCEL ────────────────────────────────────────────────
 document.getElementById('a-cancel').addEventListener('click', () => {
   document.getElementById('overlay').classList.add('hidden');
   document.getElementById('welcome').classList.remove('hidden');
-});
-
-// Enter key submits from any auth input
-['a-name', 'a-pass'].forEach(id => {
-  document.getElementById(id).addEventListener('keydown', e => {
-    if (e.key === 'Enter') document.getElementById('a-confirm').click();
-  });
 });
