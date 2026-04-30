@@ -677,3 +677,12 @@ html, body {
 .dir-btn, #mz-west span, #mz-east span {
   font-weight: bold !important;
 }
+
+/* ── NORTH ALWAYS RESERVES SPACE ───────── */
+#dir-north {
+  visibility: visible;
+}
+#dir-north.hidden {
+  display: block !important;
+  visibility: hidden;
+}
