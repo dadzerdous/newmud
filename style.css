@@ -609,3 +609,33 @@ html, body {
   color: rgba(154,122,255,0.5) !important;
   text-shadow: 0 0 6px rgba(154,122,255,0.5);
 }
+
+/* ── WEST/EAST VISIBILITY FIX ──────────── */
+#mz-west, #mz-east {
+  background: transparent !important;
+  border: none;
+}
+
+#mz-west::before {
+  content: '←';
+  font-size: 18px;
+  color: var(--accent2);
+  text-shadow: 0 0 8px rgba(154,122,255,0.7);
+  opacity: 0.7;
+}
+
+#mz-east::before {
+  content: '→';
+  font-size: 18px;
+  color: var(--accent2);
+  text-shadow: 0 0 8px rgba(154,122,255,0.7);
+  opacity: 0.7;
+}
+
+#mz-west span, #mz-east span {
+  display: none;
+}
+
+#mz-west.dim::before, #mz-east.dim::before {
+  opacity: 0.12;
+}
