@@ -30,7 +30,7 @@ const ROOM_DEFS = {
       { id:'cat',    name:'cat',    emoji:'🐈', takeable:false, actions:['look','pet','shoo']      },
       { id:'puddle', name:'puddle', emoji:'💧', takeable:false, actions:['look','avoid','step in'] },
     ],
-    exits: ['south','east'],
+    exits: ['east'],
     players: ['Morg'],
   },
   tavern: {
@@ -40,15 +40,15 @@ const ROOM_DEFS = {
       { id:'barkeep', name:'barkeep', emoji:'🍺', takeable:false, actions:['look','talk','order'] },
       { id:'sleeper', name:'sleeper', emoji:'💤', takeable:false, actions:['look','wake','rob']   },
     ],
-    exits: ['east'],
+    exits: ['south'],
     players: [],
   },
 };
 
 const ROOM_MAP = {
-  market: { north:'tavern', west:'alley'  },
-  alley:  { south:'market', east:'market' },
-  tavern: { east:'market'                 },
+  market: { north:'tavern', west:'alley'   },
+  alley:  { east:'market'                  },
+  tavern: { south:'market'                 },
 };
 
 const LOOK_TEXT = {
