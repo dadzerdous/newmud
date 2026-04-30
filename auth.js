@@ -112,3 +112,10 @@ document.getElementById('a-cancel').addEventListener('click', () => {
   document.getElementById('overlay').classList.add('hidden');
   document.getElementById('welcome').classList.remove('hidden');
 });
+
+// Enter key submits from any auth input
+['a-name', 'a-pass'].forEach(id => {
+  document.getElementById(id).addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('a-confirm').click();
+  });
+});
