@@ -693,3 +693,26 @@ html, body {
   transform: none !important;
   text-align: center;
 }
+
+/* ── SECTION LABEL VISIBILITY ──────────── */
+.sec-label {
+  color: var(--text) !important;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 4px;
+  padding: 2px 8px;
+  display: inline-block;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  margin-bottom: 8px;
+}
+
+#ctx-who {
+  color: var(--text) !important;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 4px;
+  padding: 2px 8px;
+  display: inline-block;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  margin-bottom: 8px;
+}
