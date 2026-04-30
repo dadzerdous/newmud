@@ -577,3 +577,35 @@ html, body {
 }
 #dir-north { border-bottom: 1px solid rgba(150,120,255,0.1); border-top: none; }
 #dir-south { border-top: 1px solid rgba(150,120,255,0.1); border-bottom: none; }
+
+/* ── DIRECTION BUTTON GLOW ─────────────── */
+.dir-btn {
+  color: var(--accent2) !important;
+  border-color: rgba(150,120,255,0.25) !important;
+  text-shadow: 0 0 8px rgba(154,122,255,0.6);
+}
+
+#dir-north {
+  background: linear-gradient(to bottom, rgba(154,122,255,0.08), transparent) !important;
+}
+
+#dir-south {
+  background: linear-gradient(to top, rgba(154,122,255,0.08), transparent) !important;
+}
+
+.mzone {
+  border-color: rgba(150,120,255,0.2);
+}
+
+#mz-west {
+  background: linear-gradient(to right, rgba(154,122,255,0.08), transparent) !important;
+}
+
+#mz-east {
+  background: linear-gradient(to left, rgba(154,122,255,0.08), transparent) !important;
+}
+
+.mzone span {
+  color: rgba(154,122,255,0.5) !important;
+  text-shadow: 0 0 6px rgba(154,122,255,0.5);
+}
