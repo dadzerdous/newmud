@@ -5,8 +5,15 @@
 import { renderRoom, log, clearRoom }       from './render.js';
 import { updateHUD, setHeld }               from './hud.js';
 import { hideAuth, applyTheme, bindAuth }   from './auth.js';
+import { MockSocket }                       from './mock.js';
 
-const WS_URL = 'wss://muddygob-server-1.onrender.com';
+const WS_URL  = 'wss://muddygob-server-1.onrender.com';
+
+// ┌─────────────────────────────────────────────────────┐
+// │  MOCK MODE — set to true to develop offline         │
+// │  Set to false when your real server is running      │
+// └─────────────────────────────────────────────────────┘
+const USE_MOCK = true;
 
 let ws         = null;
 let selfName   = null;
@@ -14,7 +21,7 @@ let manualExit = false;
 
 // ── CONNECT ──────────────────────────────────────────────
 export function connect() {
-  ws = new WebSocket(WS_URL);
+  ws = USE_MOCK ? new MockSocket() : new WebSocket(WS_URL);
 
   ws.onopen = () => {
     setConn('● online');
