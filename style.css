@@ -672,3 +672,8 @@ html, body {
   color: var(--text) !important;
   opacity: 0.5;
 }
+
+/* ── DIRECTION BOLD ────────────────────── */
+.dir-btn, #mz-west span, #mz-east span {
+  font-weight: bold !important;
+}
