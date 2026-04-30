@@ -658,3 +658,17 @@ html, body {
   font-size: 11px !important;
   letter-spacing: 1px !important;
 }
+
+/* ── DIRECTION CONSISTENCY ─────────────── */
+.dir-btn {
+  font-weight: normal !important;
+  color: var(--text) !important;
+  opacity: 0.5;
+  text-shadow: none !important;
+}
+.dir-btn:active { opacity: 1; }
+
+#mz-west span, #mz-east span {
+  color: var(--text) !important;
+  opacity: 0.5;
+}
