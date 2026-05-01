@@ -35,6 +35,7 @@ chatIn.addEventListener('keydown', e => { if (e.key === 'Enter') doSend(); });
 // ── DIRECTION BUTTONS (north/south inline, west/east edge) ─
 document.querySelectorAll('.dir-btn, .mzone').forEach(el => {
   el.addEventListener('click', () => {
+    if (el.classList.contains('hidden') || el.classList.contains('dim')) return;
     const dir = el.dataset.dir;
     if (dir) sendText(dir);
   });
@@ -67,14 +68,12 @@ document.getElementById('log').addEventListener('click', closeCtx);
 // ── UPDATE DIRECTION BUTTONS ──────────────────────────────
 // Called by render.js after each room load
 window.updateDpad = function(exits) {
-  // north/south — show/hide inline buttons
   ['north','south'].forEach(dir => {
     const btn = document.getElementById('dir-' + dir);
     if (!btn) return;
     if (exits.includes(dir)) btn.classList.remove('hidden');
-    else btn.classList.add('hidden');
+    else btn.classList.add('hidden'); // CSS makes it visible but dim
   });
-  // west/east — dim edge zones
   ['west','east'].forEach(dir => {
     const zone = document.getElementById('mz-' + dir);
     if (zone) zone.classList.toggle('dim', !exits.includes(dir));

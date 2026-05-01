@@ -716,3 +716,38 @@ html, body {
   letter-spacing: 1.5px;
   margin-bottom: 8px;
 }
+
+/* ── DIRECTIONS ALWAYS VISIBLE ─────────── */
+#dir-north.hidden, #dir-south.hidden {
+  display: block !important;
+  visibility: visible !important;
+  color: rgba(255,255,255,0.12) !important;
+  text-shadow: none !important;
+  font-weight: normal !important;
+  cursor: default;
+  pointer-events: none;
+}
+
+#dir-north:not(.hidden), #dir-south:not(.hidden) {
+  color: var(--text) !important;
+  font-weight: bold !important;
+  text-shadow: 0 0 10px rgba(255,255,255,0.4);
+  opacity: 1 !important;
+}
+
+#mz-west.dim span, #mz-east.dim span {
+  color: rgba(255,255,255,0.12) !important;
+  font-weight: normal !important;
+  text-shadow: none !important;
+}
+
+#mz-west:not(.dim) span, #mz-east:not(.dim) span {
+  color: var(--text) !important;
+  font-weight: bold !important;
+  text-shadow: 0 0 10px rgba(255,255,255,0.4);
+}
+
+#mz-west.dim, #mz-east.dim {
+  pointer-events: none;
+  cursor: default;
+}
