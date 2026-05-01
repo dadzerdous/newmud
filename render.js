@@ -60,6 +60,9 @@ window.__tap = function(el) {
   el.classList.add('used');
   el.onclick = null;
 
+  // Tell server to persist this discovery
+  window.sendText('discover ' + id);
+
   addDiscovered(id, obj);
   openCtx(id);
 };
@@ -207,3 +210,14 @@ function setZones(exits) {
 
 // ── UTIL ─────────────────────────────────────────────────
 function esc(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
+// ── RESTORE DISCOVERIES (on login/resume) ────────────────
+// Called by client.js when server sends { type:'discovered', items:[...] }
+export function restoreDiscovered(ids) {
+  ids.forEach(id => {
+    if (_disc[id]) return; // already shown
+    // We may not have the object def yet (room not loaded),
+    // so store a placeholder and add the chip when the room loads
+    _disc[id] = true;
+  });
+}
