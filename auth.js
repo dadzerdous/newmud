@@ -14,21 +14,12 @@ let _mode     = 'create';
 let _race     = null;
 let _pronoun  = null;
 
-function dbg(msg) {
-  let el = document.getElementById('_dbg');
-  if (!el) {
-    el = document.createElement('div');
-    el.id = '_dbg';
-    el.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#ff0;color:#000;font-size:13px;padding:6px 10px;z-index:99999;font-family:monospace;white-space:pre-wrap;';
-    document.body.appendChild(el);
-  }
   el.textContent = msg;
 }
 
 export function bindAuth(onCreate, onLogin) {
   _onCreate = onCreate;
   _onLogin  = onLogin;
-  dbg('bindAuth called ✓');
 }
 
 export function showAuth(mode) {
@@ -56,7 +47,7 @@ export function showAuth(mode) {
 
   document.getElementById('welcome').classList.add('hidden');
   document.getElementById('overlay').classList.remove('hidden');
-  dbg(`showAuth(${mode}) — race:${_race} pronoun:${_pronoun}`);
+ — race:${_race} pronoun:${_pronoun}`);
 }
 
 export function hideAuth() {
@@ -84,7 +75,6 @@ document.querySelectorAll('#race-choices .choice').forEach(btn => {
       b.style.display = show ? '' : 'none';
       if (!show) b.classList.remove('on');
     });
-    dbg(`race=${_race}`);
   });
 });
 
@@ -94,7 +84,6 @@ document.querySelectorAll('#pronoun-choices .choice').forEach(btn => {
     _pronoun = btn.dataset.val;
     document.querySelectorAll('#pronoun-choices .choice').forEach(b => b.classList.remove('on'));
     btn.classList.add('on');
-    dbg(`race=${_race} pronoun=${_pronoun}`);
   });
 });
 
@@ -104,8 +93,6 @@ function doConfirm() {
   const pass = document.getElementById('a-pass').value.trim();
   const err  = document.getElementById('a-err');
 
-  dbg(`confirm: name="${name}" pass="${pass.length}chars" race=${_race} pronoun=${_pronoun} mode=${_mode}`);
-
   err.style.cssText = 'color:#ff4040;font-size:13px;text-align:center;padding:4px;';
   err.textContent   = '';
 
@@ -113,8 +100,6 @@ function doConfirm() {
   if (pass.length < 4)  { err.textContent = `Password too short (${pass.length} chars, need 4)`; return; }
   if (!_race)           { err.textContent = 'Pick a race first'; return; }
   if (!_pronoun)        { err.textContent = 'Pick pronouns first'; return; }
-
-  dbg(`sending ${_mode}...`);
 
   if (_mode === 'create') {
     _onCreate?.(name, pass, _race, _pronoun);
