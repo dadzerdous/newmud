@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>1MuddyGob</title>
+  <title>MuddyGob</title>
   <link rel="stylesheet" href="style.css">
   <link id="theme-css" rel="stylesheet" href="" onerror="this.removeAttribute('href')">
 </head>
@@ -32,12 +32,11 @@
 
   <div id="compass-layout">
 
-    <!-- WEST: rotated vertical, arrow points left so use ↓ -->
-    <button class="dir-btn dir-side" id="dir-west" data-dir="west">↓ west</button>
+    <button class="dir-btn dim" id="dir-west"  data-dir="west">↓ west</button>
 
     <div id="room-mid">
-      <!-- NORTH -->
-      <button class="dir-btn dir-ns" id="dir-north" data-dir="north">↑ north</button>
+
+      <button class="dir-btn dim" id="dir-north" data-dir="north">↑ north</button>
 
       <div id="room">
         <div id="room-top">
@@ -54,24 +53,24 @@
         </div>
         <div id="log-divider"></div>
         <div id="log"></div>
-        <div id="input-bar">
-          <select id="chat-mode">
-            <option value="say">say</option>
-            <option value="yell">yell</option>
-            <option value="tell">tell</option>
-            <option value="emote">emote</option>
-          </select>
-          <input id="chat-in" type="text" placeholder="..." autocomplete="off" spellcheck="false">
-          <button id="chat-send">→</button>
-        </div>
       </div>
 
-      <!-- SOUTH -->
-      <button class="dir-btn dir-ns" id="dir-south" data-dir="south">↓ south</button>
+      <button class="dir-btn dim" id="dir-south" data-dir="south">↓ south</button>
+
+      <div id="input-bar">
+        <select id="chat-mode">
+          <option value="say">say</option>
+          <option value="yell">yell</option>
+          <option value="tell">tell</option>
+          <option value="emote">emote</option>
+        </select>
+        <input id="chat-in" type="text" placeholder="..." autocomplete="off" spellcheck="false">
+        <button id="chat-send">→</button>
+      </div>
+
     </div>
 
-    <!-- EAST: rotated vertical, arrow points right so use ↑ -->
-    <button class="dir-btn dir-side" id="dir-east" data-dir="east">↑ east</button>
+    <button class="dir-btn dim" id="dir-east"  data-dir="east">↑ east</button>
 
   </div>
 
