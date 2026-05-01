@@ -44,7 +44,8 @@ export function showAuth(mode) {
 
   document.getElementById('welcome').classList.add('hidden');
   document.getElementById('overlay').classList.remove('hidden');
- — race:${_race} pronoun:${_pronoun}`);
+
+  console.log(`[AUTH] showAuth mode:${_mode} race:${_race} pronoun:${_pronoun}`);
 }
 
 export function hideAuth() {
