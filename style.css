@@ -405,6 +405,7 @@ html, body {
   color: inherit;
   letter-spacing: 1px;
 }
+
 /* ══════════════════════════════════════════
    COMPASS LAYOUT
 ══════════════════════════════════════════ */
@@ -442,45 +443,39 @@ html, body {
   font-family: Georgia, serif;
   font-size: 11px;
   letter-spacing: 1px;
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: color 0.15s;
   -webkit-tap-highlight-color: transparent;
+  flex-shrink: 0;
 }
 
-/* Available exit — bright */
 .dir-btn.avail {
   color: var(--text);
   font-weight: bold;
   text-shadow: 0 0 10px rgba(255,255,255,0.35);
+  cursor: pointer;
   pointer-events: all;
+  opacity: 1;
 }
 
-/* Unavailable exit — dim */
 .dir-btn.dim {
   color: rgba(255,255,255,0.12);
   font-weight: normal;
   text-shadow: none;
-  pointer-events: none;
   cursor: default;
+  pointer-events: none;
+  opacity: 1;
 }
 
-.dir-btn:active { opacity: 0.6; }
-
-/* ── NORTH / SOUTH — horizontal bars ── */
+/* ── NORTH / SOUTH ── */
 .dir-ns {
   width: 100%;
   padding: 5px 0;
   text-align: center;
-  border-bottom: 1px solid rgba(150,120,255,0.08);
 }
 
-#dir-south {
-  border-bottom: none;
-  border-top: 1px solid rgba(150,120,255,0.08);
-}
+#dir-north { border-bottom: 1px solid rgba(150,120,255,0.08); }
+#dir-south { border-top:    1px solid rgba(150,120,255,0.08); }
 
-/* ── WEST / EAST — vertical side strips ── */
+/* ── WEST / EAST ── */
 .dir-side {
   width: 28px;
   writing-mode: vertical-rl;
@@ -490,11 +485,7 @@ html, body {
   padding: 0;
 }
 
-#dir-west {
-  transform: rotate(180deg);
-  border-right: 1px solid rgba(150,120,255,0.08);
-}
-
-#dir-east {
-  border-left: 1px solid rgba(150,120,255,0.08);
-}
+/* West: rotate so top of text points left, arrow points left */
+#dir-west { transform: rotate(180deg); border-right: 1px solid rgba(150,120,255,0.08); }
+/* East: no rotation, arrow points right naturally */
+#dir-east { border-left: 1px solid rgba(150,120,255,0.08); }
