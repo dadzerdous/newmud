@@ -9,7 +9,6 @@
 </head>
 <body>
 
-<!-- ▓▓ WELCOME ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ -->
 <div id="welcome">
   <h1>MUDDYGOB</h1>
   <p>a dark fantasy multiplayer story</p>
@@ -17,10 +16,8 @@
   <button id="btn-login">Login</button>
 </div>
 
-<!-- ▓▓ GAME ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ -->
 <div id="game" class="hidden">
 
-  <!-- Top HUD -->
   <div id="hud">
     <div id="hud-left">
       <div id="hud-conn">○</div>
@@ -33,53 +30,55 @@
     </div>
   </div>
 
-  <!-- Room content -->
-  <div id="room">
+  <!-- Grid: west | main | east -->
+  <div id="room-grid">
 
-    <!-- North -->
-    <button class="dir-btn dir-ns hidden" id="dir-north" data-dir="north">↑ north</button>
+    <!-- LEFT: west button -->
+    <button class="dir-btn dir-side hidden" id="dir-west" data-dir="west">←<br>west</button>
 
-    <!-- West / East row -->
-    <div id="dir-we-row">
-      <button class="dir-btn dir-we hidden" id="dir-west"  data-dir="west">← west</button>
-      <button class="dir-btn dir-we hidden" id="dir-east"  data-dir="east">east →</button>
-    </div>
+    <!-- MIDDLE: north, content, south -->
+    <div id="room-mid">
+      <button class="dir-btn dir-ns hidden" id="dir-north" data-dir="north">↑ north</button>
 
-    <div id="room-top">
-      <div id="room-title"></div>
-      <div id="room-desc"></div>
+      <div id="room">
+        <div id="room-top">
+          <div id="room-title"></div>
+          <div id="room-desc"></div>
 
-      <div id="discovered" class="hidden">
-        <div class="sec-label">Discovered</div>
-        <div id="disc-chips"></div>
+          <div id="discovered" class="hidden">
+            <div class="sec-label">Discovered</div>
+            <div id="disc-chips"></div>
+          </div>
+
+          <div id="ctx" class="hidden">
+            <div class="sec-label" id="ctx-who"></div>
+            <div id="ctx-btns"></div>
+          </div>
+        </div>
+
+        <div id="log-divider"></div>
+        <div id="log"></div>
+
+        <div id="input-bar">
+          <select id="chat-mode">
+            <option value="say">say</option>
+            <option value="yell">yell</option>
+            <option value="tell">tell</option>
+            <option value="emote">emote</option>
+          </select>
+          <input id="chat-in" type="text" placeholder="..." autocomplete="off" spellcheck="false">
+          <button id="chat-send">→</button>
+        </div>
       </div>
 
-      <div id="ctx" class="hidden">
-        <div class="sec-label" id="ctx-who"></div>
-        <div id="ctx-btns"></div>
-      </div>
+      <button class="dir-btn dir-ns hidden" id="dir-south" data-dir="south">↓ south</button>
     </div>
 
-    <div id="log-divider"></div>
-    <div id="log"></div>
-
-    <!-- South -->
-    <button class="dir-btn dir-ns hidden" id="dir-south" data-dir="south">↓ south</button>
-
-    <div id="input-bar">
-      <select id="chat-mode">
-        <option value="say">say</option>
-        <option value="yell">yell</option>
-        <option value="tell">tell</option>
-        <option value="emote">emote</option>
-      </select>
-      <input id="chat-in" type="text" placeholder="..." autocomplete="off" spellcheck="false">
-      <button id="chat-send">→</button>
-    </div>
+    <!-- RIGHT: east button -->
+    <button class="dir-btn dir-side hidden" id="dir-east" data-dir="east">east<br>→</button>
 
   </div>
 
-  <!-- Bottom bar -->
   <div id="botbar">
     <div id="botbar-left">
       <button class="bot-btn" id="btn-bag">🎒</button>
@@ -91,21 +90,17 @@
 
 </div>
 
-<!-- ▓▓ AUTH MODAL ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ -->
 <div id="overlay" class="hidden">
   <div id="modal">
     <div id="modal-title">Create a Being</div>
-
     <label>Name</label>
     <input id="a-name" type="text" autocomplete="off">
-
     <label id="race-label">Race</label>
     <div class="choices" id="race-choices">
       <button class="choice" data-val="goblin">Goblin</button>
       <button class="choice" data-val="human">Human</button>
       <button class="choice" data-val="elf">Elf</button>
     </div>
-
     <label id="pronoun-label">Pronouns</label>
     <div class="choices" id="pronoun-choices">
       <button class="choice" data-val="he">He</button>
@@ -113,12 +108,9 @@
       <button class="choice" data-val="they">They</button>
       <button class="choice" data-val="it">It</button>
     </div>
-
     <label>Password</label>
     <input id="a-pass" type="password" autocomplete="off">
-
     <div id="a-err"></div>
-
     <div class="modal-btns">
       <button id="a-confirm">Enter</button>
       <button id="a-cancel">Back</button>
