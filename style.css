@@ -353,3 +353,55 @@ html, body {
 
 #dir-west { border-right: 1px solid rgba(150,120,255,0.1); }
 #dir-east { border-left:  1px solid rgba(150,120,255,0.1); }
+
+/* ── DIRECTION FIXES ───────────────────── */
+
+/* Side buttons: hidden overrides flex */
+.dir-side.hidden {
+  display: flex !important;
+  visibility: visible !important;
+  color: rgba(255,255,255,0.1) !important;
+  font-weight: normal !important;
+  text-shadow: none !important;
+  pointer-events: none !important;
+}
+.dir-side:not(.hidden) {
+  color: var(--text) !important;
+  font-weight: bold !important;
+  text-shadow: 0 0 10px rgba(255,255,255,0.4) !important;
+  pointer-events: all !important;
+}
+
+/* South must stay inside room-mid, above input */
+#dir-south {
+  order: 3;
+  flex-shrink: 0;
+}
+#room {
+  order: 2;
+  flex: 1;
+}
+#dir-north { order: 1; }
+
+/* Fix arrows — west points left, east points right using text not rotation */
+#dir-west { writing-mode: horizontal-tb !important; transform: none !important; }
+#dir-east { writing-mode: horizontal-tb !important; transform: none !important; }
+
+/* Side buttons use vertical writing but arrows stay horizontal */
+.dir-side {
+  writing-mode: vertical-rl !important;
+}
+#dir-west { transform: rotate(180deg) !important; }
+#dir-east { transform: none !important; }
+
+/* Override the text so arrows point right direction visually */
+#dir-west::before { content: '← west'; }
+#dir-east::before { content: 'east →'; }
+#dir-west, #dir-east { font-size: 0 !important; } /* hide original text */
+#dir-west::before, #dir-east::before {
+  font-size: 11px;
+  font-family: Georgia, serif;
+  font-weight: inherit;
+  color: inherit;
+  letter-spacing: 1px;
+}
