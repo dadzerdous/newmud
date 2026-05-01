@@ -30,35 +30,30 @@
     </div>
   </div>
 
-  <!-- Grid: west | main | east -->
-  <div id="room-grid">
+  <div id="compass-layout">
 
-    <!-- LEFT: west button -->
-    <button class="dir-btn dir-side hidden" id="dir-west" data-dir="west">← west</button>
+    <!-- WEST: rotated vertical, arrow points left so use ↓ -->
+    <button class="dir-btn dir-side" id="dir-west" data-dir="west">↓ west</button>
 
-    <!-- MIDDLE: north, content, south -->
     <div id="room-mid">
-      <button class="dir-btn dir-ns hidden" id="dir-north" data-dir="north">↑ north</button>
+      <!-- NORTH -->
+      <button class="dir-btn dir-ns" id="dir-north" data-dir="north">↑ north</button>
 
       <div id="room">
         <div id="room-top">
           <div id="room-title"></div>
           <div id="room-desc"></div>
-
           <div id="discovered" class="hidden">
             <div class="sec-label">Discovered</div>
             <div id="disc-chips"></div>
           </div>
-
           <div id="ctx" class="hidden">
             <div class="sec-label" id="ctx-who"></div>
             <div id="ctx-btns"></div>
           </div>
         </div>
-
         <div id="log-divider"></div>
         <div id="log"></div>
-
         <div id="input-bar">
           <select id="chat-mode">
             <option value="say">say</option>
@@ -71,11 +66,12 @@
         </div>
       </div>
 
-      <button class="dir-btn dir-ns hidden" id="dir-south" data-dir="south">↓ south</button>
+      <!-- SOUTH -->
+      <button class="dir-btn dir-ns" id="dir-south" data-dir="south">↓ south</button>
     </div>
 
-    <!-- RIGHT: east button -->
-    <button class="dir-btn dir-side hidden" id="dir-east" data-dir="east">east →</button>
+    <!-- EAST: rotated vertical, arrow points right so use ↑ -->
+    <button class="dir-btn dir-side" id="dir-east" data-dir="east">↑ east</button>
 
   </div>
 

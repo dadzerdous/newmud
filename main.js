@@ -35,7 +35,7 @@ chatIn.addEventListener('keydown', e => { if (e.key === 'Enter') doSend(); });
 // ── DIRECTION BUTTONS — all four the same ─────────────────
 document.querySelectorAll('.dir-btn').forEach(el => {
   el.addEventListener('click', () => {
-    if (el.classList.contains('hidden')) return;
+    if (el.classList.contains('dim')) return;
     const dir = el.dataset.dir;
     if (dir) sendText(dir);
   });
@@ -71,8 +71,13 @@ window.updateDpad = function(exits) {
   ['north','south','east','west'].forEach(dir => {
     const btn = document.getElementById('dir-' + dir);
     if (!btn) return;
-    if (exits.includes(dir)) btn.classList.remove('hidden');
-    else btn.classList.add('hidden');
+    if (exits.includes(dir)) {
+      btn.classList.add('avail');
+      btn.classList.remove('dim');
+    } else {
+      btn.classList.add('dim');
+      btn.classList.remove('avail');
+    }
   });
 };
 

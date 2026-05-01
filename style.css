@@ -405,3 +405,96 @@ html, body {
   color: inherit;
   letter-spacing: 1px;
 }
+/* ══════════════════════════════════════════
+   COMPASS LAYOUT
+══════════════════════════════════════════ */
+
+#compass-layout {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  overflow: hidden;
+  min-height: 0;
+}
+
+#room-mid {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+  min-height: 0;
+}
+
+#room {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+  padding: 0 8px;
+}
+
+/* ── ALL DIRECTION BUTTONS ── */
+.dir-btn {
+  background: transparent;
+  border: none;
+  font-family: Georgia, serif;
+  font-size: 11px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: color 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Available exit — bright */
+.dir-btn.avail {
+  color: var(--text);
+  font-weight: bold;
+  text-shadow: 0 0 10px rgba(255,255,255,0.35);
+  pointer-events: all;
+}
+
+/* Unavailable exit — dim */
+.dir-btn.dim {
+  color: rgba(255,255,255,0.12);
+  font-weight: normal;
+  text-shadow: none;
+  pointer-events: none;
+  cursor: default;
+}
+
+.dir-btn:active { opacity: 0.6; }
+
+/* ── NORTH / SOUTH — horizontal bars ── */
+.dir-ns {
+  width: 100%;
+  padding: 5px 0;
+  text-align: center;
+  border-bottom: 1px solid rgba(150,120,255,0.08);
+}
+
+#dir-south {
+  border-bottom: none;
+  border-top: 1px solid rgba(150,120,255,0.08);
+}
+
+/* ── WEST / EAST — vertical side strips ── */
+.dir-side {
+  width: 28px;
+  writing-mode: vertical-rl;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+#dir-west {
+  transform: rotate(180deg);
+  border-right: 1px solid rgba(150,120,255,0.08);
+}
+
+#dir-east {
+  border-left: 1px solid rgba(150,120,255,0.08);
+}
