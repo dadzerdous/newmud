@@ -123,6 +123,50 @@ function openCtx(id) {
   document.getElementById('ctx').classList.remove('hidden');
 }
 
+// ── HAND CONTEXT ─────────────────────────────────────────
+// Called when player taps their held item
+export function openHandCtx(itemId) {
+  if (!itemId) return;
+
+  const def  = window.worldItems?.[itemId];
+  const name = def?.name ?? itemId;
+  const actions = ['look', 'use', 'throw', 'store', 'drop'];
+
+  // Deselect any room chips
+  document.querySelectorAll('.dchip').forEach(c => c.classList.remove('active'));
+  _activeCtx = '__hand__';
+
+  document.getElementById('ctx-who').textContent = (def?.emoji ? def.emoji + ' ' : '') + name;
+
+  const btns = document.getElementById('ctx-btns');
+  btns.innerHTML = '';
+
+  actions.forEach(action => {
+    const danger = DANGER.has(action);
+    const b = document.createElement('button');
+    b.style.cssText = (danger
+      ? 'background:#180808;border:1px solid rgba(255,80,80,0.4);color:#ff7060;'
+      : 'background:#14122000;border:1px solid rgba(150,120,255,0.38);color:#b8a8f0;'
+    ) + 'font-family:Georgia,serif;font-size:12px;padding:5px 13px;border-radius:14px;cursor:pointer;opacity:1;visibility:visible;display:inline-block;line-height:1.4;';
+
+    b.textContent = action;
+    b.addEventListener('click', e => {
+      e.stopPropagation();
+      if (action === 'store') {
+        // Store: move from hand to bag — server handles, just send command
+        window.sendText('store ' + name.toLowerCase());
+      } else {
+        window.sendText(action + ' ' + name.toLowerCase());
+      }
+      // Close ctx after action on hand item
+      closeCtx();
+    });
+    btns.appendChild(b);
+  });
+
+  document.getElementById('ctx').classList.remove('hidden');
+}
+
 export function closeCtx() {
   _activeCtx = null;
   document.querySelectorAll('.dchip').forEach(c => c.classList.remove('active'));

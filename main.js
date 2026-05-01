@@ -4,7 +4,7 @@
 
 import { connect, sendText } from './client.js';
 import { showAuth }          from './auth.js';
-import { closeCtx }          from './render.js';
+import { closeCtx, openHandCtx } from './render.js';
 
 // ── ITEMS ─────────────────────────────────────────────────
 fetch('items.json')
@@ -54,7 +54,11 @@ document.getElementById('btn-quit').addEventListener('click', () => {
   sendText('quit');
 });
 
-document.getElementById('hand-l').addEventListener('click', () => sendText('hands'));
+document.getElementById('hand-l').addEventListener('click', () => {
+  const held = document.getElementById('hand-l').dataset.held;
+  if (held) openHandCtx(held);
+  else sendText('hands');
+});
 document.getElementById('hand-r').addEventListener('click', () => sendText('hands'));
 
 // ── CLOSE CTX ON LOG TAP ─────────────────────────────────

@@ -146,6 +146,7 @@ export class MockSocket extends EventTarget {
         this._sys(TALK_TEXT[target] ?? `The ${target} has nothing to say.`);
         break;
 
+      case 'store': this._store(target); break;
       case 'take':  this._take(target);  break;
       case 'drop':  this._drop(target);  break;
       case 'throw': this._throw(target); break;
@@ -183,6 +184,26 @@ export class MockSocket extends EventTarget {
       default:
         this._sys(`You try to "${verb}" but nothing happens.`);
     }
+  }
+
+  // ── STORE (hand → bag, frees hand) ───────────────────────
+  _store(target) {
+    const id  = this._resolveInv(target);
+    const obj = id ? this._inventory.get(id) : null;
+
+    if (!obj) {
+      this._sys(`You aren't holding a ${target}.`);
+      return;
+    }
+    if (this._held !== id) {
+      this._sys(`The ${target} is already in your bag.`);
+      return;
+    }
+
+    // Free the hand, item stays in inventory
+    this._held = null;
+    this._sys(`You tuck the ${obj.name} away.`);
+    this._emit({ type:'held', item: null });
   }
 
   // ── TAKE ──────────────────────────────────────────────────
