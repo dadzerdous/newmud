@@ -14,9 +14,6 @@ let _mode     = 'create';
 let _race     = null;
 let _pronoun  = null;
 
-  el.textContent = msg;
-}
-
 export function bindAuth(onCreate, onLogin) {
   _onCreate = onCreate;
   _onLogin  = onLogin;
