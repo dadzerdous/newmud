@@ -751,3 +751,40 @@ html, body {
   pointer-events: none;
   cursor: default;
 }
+
+/* ── WEST/EAST ROW ─────────────────────── */
+#dir-we-row {
+  display: flex;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.dir-we {
+  width: auto !important;
+  padding: 3px 10px !important;
+  border-left: none !important;
+  border-right: none !important;
+  border-top: none !important;
+}
+
+#dir-west  { border-radius: 0 !important; border-right: 1px solid rgba(150,120,255,0.1) !important; }
+#dir-east  { border-radius: 0 !important; border-left:  1px solid rgba(150,120,255,0.1) !important; }
+
+/* ALL four use same active/dim styles */
+.dir-btn.hidden {
+  display: block !important;
+  visibility: visible !important;
+  color: rgba(255,255,255,0.1) !important;
+  text-shadow: none !important;
+  font-weight: normal !important;
+  pointer-events: none !important;
+  cursor: default !important;
+}
+
+.dir-btn:not(.hidden) {
+  color: var(--text) !important;
+  font-weight: bold !important;
+  text-shadow: 0 0 10px rgba(255,255,255,0.4) !important;
+  cursor: pointer !important;
+  pointer-events: all !important;
+}

@@ -33,15 +33,17 @@
     </div>
   </div>
 
-  <!-- West/East edge tap zones -->
-  <div class="mzone" id="mz-west" data-dir="west"><span class="mzone-vert">← west</span></div>
-  <div class="mzone" id="mz-east" data-dir="east"><span class="mzone-vert">east →</span></div>
-
   <!-- Room content -->
   <div id="room">
 
-    <!-- North button — above room title, below HUD -->
-    <button class="dir-btn hidden" id="dir-north" data-dir="north">↑ north</button>
+    <!-- North -->
+    <button class="dir-btn dir-ns hidden" id="dir-north" data-dir="north">↑ north</button>
+
+    <!-- West / East row -->
+    <div id="dir-we-row">
+      <button class="dir-btn dir-we hidden" id="dir-west"  data-dir="west">← west</button>
+      <button class="dir-btn dir-we hidden" id="dir-east"  data-dir="east">east →</button>
+    </div>
 
     <div id="room-top">
       <div id="room-title"></div>
@@ -61,8 +63,8 @@
     <div id="log-divider"></div>
     <div id="log"></div>
 
-    <!-- South button — between log and input -->
-    <button class="dir-btn hidden" id="dir-south" data-dir="south">↓ south</button>
+    <!-- South -->
+    <button class="dir-btn dir-ns hidden" id="dir-south" data-dir="south">↓ south</button>
 
     <div id="input-bar">
       <select id="chat-mode">
