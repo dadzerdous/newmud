@@ -349,3 +349,23 @@ html, body {
 }
 .modal-btns button:first-child { border-color: var(--accent); color: var(--accent2); }
 .modal-btns button:first-child:active { background: var(--accent); color: #000; }
+
+/* ── ABSENT DISCOVERED CHIP ────────────── */
+.dchip.absent {
+  opacity: 0.35;
+  border-style: dashed;
+}
+
+/* ── INPUT BAR POSITION FIX ────────────── */
+#room-mid {
+  display: flex;
+  flex-direction: column;
+}
+#input-bar {
+  order: 99;
+  flex-shrink: 0;
+}
+#dir-south {
+  order: 98;
+  flex-shrink: 0;
+}
