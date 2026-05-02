@@ -13,7 +13,18 @@ let _activeCtx = null;
 export function renderRoom(data, selfName) {
   // Store objects for lookup
   _objects = {};
-  (data.objects || []).forEach(o => { _objects[o.id ?? o.name] = o; });
+  const currentIds = new Set();
+  (data.objects || []).forEach(o => {
+    const id = o.id ?? o.name;
+    _objects[id] = o;
+    currentIds.add(id);
+  });
+
+  // Dim/undim discovered chips based on whether item is still in room
+  document.querySelectorAll('.dchip').forEach(chip => {
+    const id = chip.dataset.id;
+    chip.classList.toggle('absent', !currentIds.has(id));
+  });
 
   // Title
   document.getElementById('room-title').textContent = data.title ?? '';
@@ -23,18 +34,6 @@ export function renderRoom(data, selfName) {
 
   // Movement zones
   setZones(data.exits || []);
-
-  // Auto-show item-type objects in discovered section
-  // (they may not appear in description text)
-  (data.objects || []).forEach(obj => {
-    if (obj.type === 'item') {
-      const id = obj.id ?? obj.name;
-      if (!_disc[id]) {
-        _objects[id] = obj;
-        addDiscovered(id, obj);
-      }
-    }
-  });
 
   // Players
   const others = (data.players || []).filter(n => n !== selfName);
@@ -95,6 +94,7 @@ function addDiscovered(id, obj) {
     _activeCtx === id ? closeCtx() : openCtx(id);
   });
   row.appendChild(chip);
+  updateDiscoveryCounter(data);
 }
 
 // ── CONTEXT ACTIONS ──────────────────────────────────────
@@ -226,4 +226,22 @@ export function restoreDiscovered(ids) {
     if (_disc[id]) return;
     _disc[id] = true;
   });
+}
+
+// ── DISCOVERY COUNTER ────────────────────────────────────
+let _totalDiscoverable = 0;
+
+function updateDiscoveryCounter() {
+  const found = Object.keys(_disc).length;
+  const label = document.getElementById('discovered-label');
+  if (label) {
+    label.textContent = _totalDiscoverable > 0
+      ? `Discovered  ${found}/${_totalDiscoverable}`
+      : `Discovered`;
+  }
+}
+
+export function setTotalDiscoverable(n) {
+  _totalDiscoverable = n;
+  updateDiscoveryCounter();
 }
