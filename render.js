@@ -219,3 +219,11 @@ function setZones(exits) {
 
 // ── UTIL ─────────────────────────────────────────────────
 function esc(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
+// ── RESTORE DISCOVERIES (on login/resume) ────────────────
+export function restoreDiscovered(ids) {
+  ids.forEach(id => {
+    if (_disc[id]) return;
+    _disc[id] = true;
+  });
+}
