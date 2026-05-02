@@ -369,3 +369,9 @@ html, body {
   order: 98;
   flex-shrink: 0;
 }
+
+/* ── DISCOVERED WORD IN DESCRIPTION ───── */
+.tap.known {
+  color: var(--accent2);
+  border-bottom-color: rgba(192,170,255,0.3);
+}
