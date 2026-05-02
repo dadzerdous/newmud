@@ -11,6 +11,9 @@ let _activeCtx = null;
 
 // ── RENDER ROOM ──────────────────────────────────────────
 export function renderRoom(data, selfName) {
+  _currentRoomId = data.id ?? data.title;
+  if (!_disc[_currentRoomId]) _disc[_currentRoomId] = new Set();
+
   // Store objects for lookup
   _objects = {};
   const currentIds = new Set();
@@ -25,6 +28,16 @@ export function renderRoom(data, selfName) {
     const id = chip.dataset.id;
     chip.classList.toggle('absent', !currentIds.has(id));
   });
+
+  // Re-render chips for rooms already partially discovered
+  if (_disc[_currentRoomId]?.size > 0) {
+    _disc[_currentRoomId].forEach(id => {
+      const obj = _objects[id];
+      if (obj && !document.querySelector('.dchip[data-id="' + id + '"]')) {
+        addDiscovered(id, obj);
+      }
+    });
+  }
 
   // Update discovery counter
   _totalDiscoverable = data.totalDiscoverable ?? 0;
@@ -53,7 +66,7 @@ function renderDesc(desc, objects) {
     const label = obj.name;
     const re    = new RegExp(`\\b(${esc(label)})\\b`, 'gi');
 
-    if (_disc[id]) {
+    if (_disc[_currentRoomId]?.has(id)) {
       // Already discovered — show as plain text, discovery tracked via chip
       text = text.replace(re, `$1`);
     } else {
@@ -81,8 +94,8 @@ window.__tap = function(el) {
 
 // ── DISCOVERED ───────────────────────────────────────────
 function addDiscovered(id, obj) {
-  if (_disc[id]) return;
-  _disc[id] = true;
+  if (_disc[_currentRoomId]?.has(id)) return;
+  _disc[_currentRoomId].add(id);
 
   const section = document.getElementById('discovered');
   const row     = document.getElementById('disc-chips');
@@ -204,7 +217,6 @@ export function log(msg, cls) {
 // ── CLEAR (called on new room) ───────────────────────────
 export function clearRoom() {
   _objects   = {};
-  // NOTE: do NOT clear _disc — discoveries persist across rooms
   _activeCtx = null;
 
   document.getElementById('room-title').textContent = '';
@@ -212,7 +224,9 @@ export function clearRoom() {
   document.getElementById('ctx-btns').innerHTML     = '';
   document.getElementById('log').innerHTML          = '';
   document.getElementById('ctx').classList.add('hidden');
-  // Keep discovered section visible but dont wipe chips
+  // Wipe chips — they'll be rebuilt for the new room
+  document.getElementById('disc-chips').innerHTML = '';
+  document.getElementById('discovered').classList.add('hidden');
 }
 
 // ── MOVEMENT ZONES ───────────────────────────────────────
@@ -248,3 +262,39 @@ export function setTotalDiscoverable(n) {
   _totalDiscoverable = n;
   updateDiscoveryCounter();
 }
+
+// ── INVENTORY ITEM CLICKS ────────────────────────────────
+// Handles .obj spans sent by inventory command in the log
+document.getElementById('log').addEventListener('click', e => {
+  const obj = e.target.closest('.obj');
+  if (!obj) return;
+  e.stopPropagation();
+
+  const name    = obj.dataset.name;
+  const actions = JSON.parse(obj.dataset.actions || '[]');
+  if (!name || !actions.length) return;
+
+  _activeCtx = '__inv__';
+  document.querySelectorAll('.dchip').forEach(c => c.classList.remove('active'));
+  document.getElementById('ctx-who').textContent = name;
+
+  const btns = document.getElementById('ctx-btns');
+  btns.innerHTML = '';
+  actions.forEach(action => {
+    const danger = DANGER.has(action);
+    const b = document.createElement('button');
+    b.style.cssText = (danger
+      ? 'background:#180808;border:1px solid rgba(255,80,80,0.4);color:#ff7060;'
+      : 'background:#14122000;border:1px solid rgba(150,120,255,0.38);color:#b8a8f0;'
+    ) + 'font-family:Georgia,serif;font-size:12px;padding:5px 13px;border-radius:14px;cursor:pointer;opacity:1;visibility:visible;display:inline-block;line-height:1.4;';
+    b.textContent = action;
+    b.addEventListener('click', ev => {
+      ev.stopPropagation();
+      window.sendText(action + ' ' + name.toLowerCase());
+      closeCtx();
+    });
+    btns.appendChild(b);
+  });
+
+  document.getElementById('ctx').classList.remove('hidden');
+});
