@@ -94,7 +94,7 @@ function addDiscovered(id, obj) {
     _activeCtx === id ? closeCtx() : openCtx(id);
   });
   row.appendChild(chip);
-  updateDiscoveryCounter(data);
+  updateDiscoveryCounter();
 }
 
 // ── CONTEXT ACTIONS ──────────────────────────────────────
