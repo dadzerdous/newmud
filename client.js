@@ -12,7 +12,7 @@ const WS_URL  = 'wss://muddygob-server-1.onrender.com';
 // ┌─────────────────────────────────────────────────────┐
 // │  MOCK MODE — true = offline dev, false = real server│
 // └─────────────────────────────────────────────────────┘
-const USE_MOCK = false;
+const USE_MOCK = true;
 
 let ws         = null;
 let selfName   = null;
@@ -82,8 +82,8 @@ function route(pkt) {
       break;
 
     case 'discovered':
-      // Restore persisted discoveries on login/resume
-      if (Array.isArray(pkt.items)) restoreDiscovered(pkt.items);
+      // Per-room format: { perRoom: { roomId: [itemIds] } }
+      if (pkt.perRoom) restoreDiscovered(pkt.perRoom);
       break;
 
     case 'room':

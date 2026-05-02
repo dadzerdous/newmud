@@ -30,9 +30,8 @@ export function renderRoom(data, selfName) {
   // Title
   document.getElementById('room-title').textContent = data.title ?? '';
 
-  // Description — make undiscovered object names tappable,
-  // keep discovered names tappable but styled differently
-  renderDesc(data.desc, data.objects || []);
+  // Description
+  renderDesc(data, data.objects || []);
 
   // Rebuild discovered chips for this room
   rebuildChips(currentIds);
@@ -52,37 +51,60 @@ export function renderRoom(data, selfName) {
 }
 
 // ── DESCRIPTION ──────────────────────────────────────────
-function renderDesc(desc, objects) {
+function renderDesc(data, objects) {
   const el = document.getElementById('room-desc');
-
-  // Join desc array — but DON'T run regex on injected roomText that
-  // may already contain item names. Process each line separately.
-  const lines = Array.isArray(desc) ? desc : [desc ?? ''];
   const discovered = _disc[_currentRoomId];
 
-  let html = lines.map(line => {
-    let text = line;
+  // Only run regex on scenery objects — NOT items
+  // Items are injected via roomText and already contain the item name
+  // Running regex on those lines causes the HTML bleed bug
+  const scenery = objects.filter(o => o.type !== 'item');
+  const items   = objects.filter(o => o.type === 'item');
 
-    objects.forEach(obj => {
+  const allLines = Array.isArray(data.desc) ? data.desc : [data.desc ?? ''];
+  // Item roomText lines are appended at the end of desc by the server
+  const baseLines = allLines.slice(0, allLines.length - items.length);
+  const itemLines = allLines.slice(allLines.length - items.length);
+
+  // Process base lines — apply regex for scenery names only
+  let html = baseLines.map(line => {
+    let text = line;
+    scenery.forEach(obj => {
       const id    = obj.id ?? obj.name;
       const label = obj.name;
       const re    = new RegExp(`\\b(${esc(label)})\\b`, 'gi');
-
       if (discovered?.has(id)) {
-        // Already discovered — still tappable but styled as known
         text = text.replace(re,
           `<span class="tap known" data-id="${id}" onclick="window.__tap(this)">${label}</span>`
         );
       } else {
-        // Not yet discovered — tappable
         text = text.replace(re,
           `<span class="tap" data-id="${id}" onclick="window.__tap(this)">${label}</span>`
         );
       }
     });
-
     return text;
   }).join(' ');
+
+  // Append item lines — wrap just the item name, not the whole line
+  itemLines.forEach((line, i) => {
+    const obj = items[i];
+    if (!obj) { html += ' ' + line; return; }
+    const id    = obj.id ?? obj.name;
+    const label = obj.name;
+    const re    = new RegExp(`\\b(${esc(label)})\\b`, 'gi');
+    let text = line;
+    if (discovered?.has(id)) {
+      text = text.replace(re,
+        `<span class="tap known" data-id="${id}" onclick="window.__tap(this)">${label}</span>`
+      );
+    } else {
+      text = text.replace(re,
+        `<span class="tap" data-id="${id}" onclick="window.__tap(this)">${label}</span>`
+      );
+    }
+    html += ' ' + text;
+  });
 
   el.innerHTML = html;
 }
@@ -269,13 +291,12 @@ function updateDiscoveryCounter() {
 }
 
 // ── RESTORE DISCOVERIES (on login/resume) ────────────────
-export function restoreDiscovered(ids) {
-  // ids is a flat array from server — we don't know which room
-  // so we store them as pending to be applied on next room render
-  // For now just mark them on current room if we have one
-  if (!_currentRoomId) return;
-  if (!_disc[_currentRoomId]) _disc[_currentRoomId] = new Set();
-  ids.forEach(id => _disc[_currentRoomId].add(id));
+export function restoreDiscovered(perRoom) {
+  // perRoom = { roomId: [itemIds, ...], ... }
+  for (const [roomId, ids] of Object.entries(perRoom)) {
+    if (!_disc[roomId]) _disc[roomId] = new Set();
+    ids.forEach(id => _disc[roomId].add(id));
+  }
 }
 
 export function setTotalDiscoverable(n) {
