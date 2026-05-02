@@ -5,9 +5,10 @@
 const DANGER = new Set(['steal','attack','kill','kick','destroy','stab']);
 
 // State
-let _objects   = {};  // id → { emoji, name, actions }
-let _disc      = {};  // id → true (discovered)
-let _activeCtx = null;
+let _objects       = {};  // id → { emoji, name, actions }
+let _disc          = {};  // roomId → Set of discovered ids
+let _currentRoomId = null;
+let _activeCtx     = null;
 
 // ── RENDER ROOM ──────────────────────────────────────────
 export function renderRoom(data, selfName) {
