@@ -86,12 +86,13 @@ function route(pkt) {
       if (Array.isArray(pkt.items)) restoreDiscovered(pkt.items);
       break;
 
-    case 'room':
-      hideAuth();
-      clearRoom();
-      window._room = pkt;
-      renderRoom(pkt, selfName);
-      break;
+case 'room':
+  console.log("[CLIENT ROOM PACKET]", pkt);
+  hideAuth();
+  clearRoom();
+  window._room = pkt;
+  renderRoom(pkt, selfName);
+  break;
 
     case 'system':
       log(pkt.msg, 'll-sys');
