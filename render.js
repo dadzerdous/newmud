@@ -20,11 +20,15 @@ export function renderRoom(data, selfName) {
     currentIds.add(id);
   });
 
-  // Dim/undim discovered chips based on whether item is still in room
+  // Dim chips for items not currently in room, undim ones that are
   document.querySelectorAll('.dchip').forEach(chip => {
     const id = chip.dataset.id;
     chip.classList.toggle('absent', !currentIds.has(id));
   });
+
+  // Update discovery counter
+  _totalDiscoverable = data.totalDiscoverable ?? 0;
+  updateDiscoveryCounter();
 
   // Title
   document.getElementById('room-title').textContent = data.title ?? '';
@@ -50,8 +54,8 @@ function renderDesc(desc, objects) {
     const re    = new RegExp(`\\b(${esc(label)})\\b`, 'gi');
 
     if (_disc[id]) {
-      // Already discovered — just dim the word, no tap
-      text = text.replace(re, `<span class="tap used">$1</span>`);
+      // Already discovered — show as plain text, discovery tracked via chip
+      text = text.replace(re, `$1`);
     } else {
       text = text.replace(re,
         `<span class="tap" data-id="${id}" onclick="window.__tap(this)">${label}</span>`
@@ -200,16 +204,15 @@ export function log(msg, cls) {
 // ── CLEAR (called on new room) ───────────────────────────
 export function clearRoom() {
   _objects   = {};
-  _disc      = {};
+  // NOTE: do NOT clear _disc — discoveries persist across rooms
   _activeCtx = null;
 
   document.getElementById('room-title').textContent = '';
   document.getElementById('room-desc').innerHTML    = '';
-  document.getElementById('disc-chips').innerHTML   = '';
   document.getElementById('ctx-btns').innerHTML     = '';
   document.getElementById('log').innerHTML          = '';
-  document.getElementById('discovered').classList.add('hidden');
   document.getElementById('ctx').classList.add('hidden');
+  // Keep discovered section visible but dont wipe chips
 }
 
 // ── MOVEMENT ZONES ───────────────────────────────────────
