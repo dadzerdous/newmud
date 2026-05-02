@@ -5,10 +5,9 @@
 const DANGER = new Set(['steal','attack','kill','kick','destroy','stab']);
 
 // ── STATE ────────────────────────────────────────────────
-let _objects       = {};  // id → object def for current room
-let _disc          = {};  // roomId → Set of discovered ids (persists across room changes)
-let _currentRoomId = null;
-let _activeCtx     = null;
+let _objects           = {};  // id → object def for current room
+let _currentRoomId     = null;
+let _activeCtx         = null;
 let _totalDiscoverable = 0;
 
 // ── RENDER ROOM ──────────────────────────────────────────
@@ -52,58 +51,33 @@ export function renderRoom(data, selfName) {
 
 // ── DESCRIPTION ──────────────────────────────────────────
 function renderDesc(data, objects) {
-  const el = document.getElementById('room-desc');
-  const discovered = _disc[_currentRoomId];
-
-  // Only run regex on scenery objects — NOT items
-  // Items are injected via roomText and already contain the item name
-  // Running regex on those lines causes the HTML bleed bug
+  const el      = document.getElementById('room-desc');
   const scenery = objects.filter(o => o.type !== 'item');
   const items   = objects.filter(o => o.type === 'item');
 
-  const allLines = Array.isArray(data.desc) ? data.desc : [data.desc ?? ''];
-  // Item roomText lines are appended at the end of desc by the server
+  const allLines  = Array.isArray(data.desc) ? data.desc : [data.desc ?? ''];
   const baseLines = allLines.slice(0, allLines.length - items.length);
   const itemLines = allLines.slice(allLines.length - items.length);
 
-  // Process base lines — apply regex for scenery names only
-  let html = baseLines.map(line => {
-    let text = line;
-    scenery.forEach(obj => {
-      const id    = obj.id ?? obj.name;
-      const label = obj.name;
-      const re    = new RegExp(`\\b(${esc(label)})\\b`, 'gi');
-      if (discovered?.has(id)) {
-        text = text.replace(re,
-          `<span class="tap known" data-id="${id}" onclick="window.__tap(this)">${label}</span>`
-        );
-      } else {
-        text = text.replace(re,
-          `<span class="tap" data-id="${id}" onclick="window.__tap(this)">${label}</span>`
-        );
-      }
-    });
-    return text;
-  }).join(' ');
-
-  // Append item lines — wrap just the item name, not the whole line
-  itemLines.forEach((line, i) => {
-    const obj = items[i];
-    if (!obj) { html += ' ' + line; return; }
+  function wrap(obj, text) {
     const id    = obj.id ?? obj.name;
     const label = obj.name;
     const re    = new RegExp(`\\b(${esc(label)})\\b`, 'gi');
+    const cls   = obj.discovered ? 'tap known' : 'tap';
+    return text.replace(re,
+      `<span class="${cls}" data-id="${id}" onclick="window.__tap(this)">${label}</span>`
+    );
+  }
+
+  let html = baseLines.map(line => {
     let text = line;
-    if (discovered?.has(id)) {
-      text = text.replace(re,
-        `<span class="tap known" data-id="${id}" onclick="window.__tap(this)">${label}</span>`
-      );
-    } else {
-      text = text.replace(re,
-        `<span class="tap" data-id="${id}" onclick="window.__tap(this)">${label}</span>`
-      );
-    }
-    html += ' ' + text;
+    scenery.forEach(obj => { text = wrap(obj, text); });
+    return text;
+  }).join(' ');
+
+  itemLines.forEach((line, i) => {
+    const obj = items[i];
+    html += ' ' + (obj ? wrap(obj, line) : line);
   });
 
   el.innerHTML = html;
@@ -115,17 +89,14 @@ window.__tap = function(el) {
   const obj = _objects[id];
   if (!obj) return;
 
-  // Mark as discovered
-  if (!_disc[_currentRoomId]) _disc[_currentRoomId] = new Set();
-  if (!_disc[_currentRoomId].has(id)) {
-    _disc[_currentRoomId].add(id);
+  // Mark as discovered on server
+  if (!obj.discovered) {
+    obj.discovered = true;
+    el.className = 'tap known';
     window.sendText('discover ' + id);
     addChip(id, obj);
     updateDiscoveryCounter();
   }
-
-  // Style the word as known
-  el.classList.add('known');
 
   openCtx(id);
 };
@@ -134,20 +105,19 @@ window.__tap = function(el) {
 function rebuildChips(currentIds) {
   const row     = document.getElementById('disc-chips');
   const section = document.getElementById('discovered');
-  const discovered = _disc[_currentRoomId];
 
   row.innerHTML = '';
 
-  if (!discovered || discovered.size === 0) {
+  const discovered = Object.values(_objects).filter(o => o.discovered);
+
+  if (discovered.length === 0) {
     section.classList.add('hidden');
     return;
   }
 
   section.classList.remove('hidden');
-
-  discovered.forEach(id => {
-    const obj = _objects[id];
-    if (!obj) return; // object not in this room's object list at all
+  discovered.forEach(obj => {
+    const id   = obj.id ?? obj.name;
     const chip = makeChip(id, obj, currentIds.has(id));
     row.appendChild(chip);
   });
@@ -263,7 +233,7 @@ export function log(msg, cls) {
 export function clearRoom() {
   _objects   = {};
   _activeCtx = null;
-  // _disc is intentionally NOT cleared — persists per room
+  // _disc no longer needed — server sends discovered flag per object
 
   document.getElementById('room-title').textContent = '';
   document.getElementById('room-desc').innerHTML    = '';
@@ -281,7 +251,7 @@ function setZones(exits) {
 
 // ── DISCOVERY COUNTER ────────────────────────────────────
 function updateDiscoveryCounter() {
-  const found = _disc[_currentRoomId]?.size ?? 0;
+  const found = Object.values(_objects).filter(o => o.discovered).length;
   const label = document.getElementById('discovered-label');
   if (label) {
     label.textContent = _totalDiscoverable > 0
@@ -290,14 +260,10 @@ function updateDiscoveryCounter() {
   }
 }
 
-// ── RESTORE DISCOVERIES (on login/resume) ────────────────
-export function restoreDiscovered(perRoom) {
-  // perRoom = { roomId: [itemIds, ...], ... }
-  for (const [roomId, ids] of Object.entries(perRoom)) {
-    if (!_disc[roomId]) _disc[roomId] = new Set();
-    ids.forEach(id => _disc[roomId].add(id));
-  }
-}
+// ── RESTORE DISCOVERIES ──────────────────────────────────
+// No longer needed — server sends discovered:true on each object
+// Kept as a no-op so client.js import doesn't break
+export function restoreDiscovered() {}
 
 export function setTotalDiscoverable(n) {
   _totalDiscoverable = n;
