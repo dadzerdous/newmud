@@ -3,7 +3,7 @@
 // ════════════════════════════════════════
 
 import { renderRoom, log, clearRoom, restoreDiscovered, setTotalDiscoverable } from './render.js';
-import { updateHUD, setHeld }             from './hud.js';
+import { updateHUD, setHeld, setHands }   from './hud.js';
 import { hideAuth, applyTheme, bindAuth } from './auth.js';
 import { MockSocket }                     from './mock.js';
 
@@ -12,7 +12,7 @@ const WS_URL  = 'wss://muddygob-server-1.onrender.com';
 // ┌─────────────────────────────────────────────────────┐
 // │  MOCK MODE — true = offline dev, false = real server│
 // └─────────────────────────────────────────────────────┘
-const USE_MOCK = false;
+const USE_MOCK = true;
 
 let ws         = null;
 let selfName   = null;
@@ -79,6 +79,10 @@ function route(pkt) {
 
     case 'held':
       setHeld(pkt.item);
+      break;
+
+    case 'hands':
+      setHands(pkt.hands);
       break;
 
     case 'discovered':
