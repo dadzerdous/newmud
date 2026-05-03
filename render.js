@@ -14,9 +14,6 @@ let _totalDiscoverable = 0;
 export function renderRoom(data, selfName) {
   _currentRoomId = data.id ?? data.title;
 
-  // Ensure a Set exists for this room
-  if (!_disc[_currentRoomId]) _disc[_currentRoomId] = new Set();
-
   // Build object lookup for this room
   _objects = {};
   const currentIds = new Set();
