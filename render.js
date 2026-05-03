@@ -47,33 +47,29 @@ export function renderRoom(data, selfName) {
 }
 
 // ── DESCRIPTION ──────────────────────────────────────────
-// Each object's roomDesc is appended as its own line by the server.
-// The client renders base lines as plain text, then each object's
-// line with that object's name wrapped as a tappable span.
 function renderDesc(data, objects) {
   const el = document.getElementById('room-desc');
 
-  const allLines  = Array.isArray(data.desc) ? data.desc : [data.desc ?? ''];
-  // Base lines = everything except the last N lines (one per object)
-  const baseLines = allLines.slice(0, allLines.length - objects.length);
-  const objLines  = allLines.slice(allLines.length - objects.length);
+  const lines = Array.isArray(data.desc) ? data.desc : [data.desc ?? ''];
+  let html = lines.join(' ');
 
-  // Base description — plain text, no tappable spans
-  let html = baseLines.join(' ');
-
-  // Each object line — wrap the object name as tappable
-  objLines.forEach((line, i) => {
-    const obj = objects[i];
-    if (!obj) { html += ' ' + line; return; }
-
+  objects.forEach(obj => {
     const id    = obj.id ?? obj.name;
     const label = obj.name;
-    const cls   = obj.discovered ? 'tap known' : 'tap';
-    const re    = new RegExp(`\\b(${esc(label)})\\b`, 'gi');
-    const wrapped = line.replace(re,
-      `<span class="${cls}" data-id="${id}" onclick="window.__tap(this)">${label}</span>`
-    );
-    html += ' ' + wrapped;
+    if (!label) return;
+
+    const cls = obj.discovered ? 'tap known' : 'tap';
+    const re  = new RegExp(`\\b(${esc(label)})\\b`, 'gi');
+
+    if (re.test(html)) {
+      // Name found in description — wrap it
+      html = html.replace(new RegExp(`\\b(${esc(label)})\\b`, 'gi'),
+        `<span class="${cls}" data-id="${id}" onclick="window.__tap(this)">$1</span>`
+      );
+    } else {
+      // Name not in description — append as standalone tappable
+      html += ` <span class="${cls}" data-id="${id}" onclick="window.__tap(this)">${obj.emoji ? obj.emoji + ' ' : ''}${label}</span>`;
+    }
   });
 
   el.innerHTML = html;
