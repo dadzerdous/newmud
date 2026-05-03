@@ -47,34 +47,33 @@ export function renderRoom(data, selfName) {
 }
 
 // ── DESCRIPTION ──────────────────────────────────────────
+// Each object's roomDesc is appended as its own line by the server.
+// The client renders base lines as plain text, then each object's
+// line with that object's name wrapped as a tappable span.
 function renderDesc(data, objects) {
-  const el      = document.getElementById('room-desc');
-  const scenery = objects.filter(o => o.type !== 'item');
-  const items   = objects.filter(o => o.type === 'item');
+  const el = document.getElementById('room-desc');
 
   const allLines  = Array.isArray(data.desc) ? data.desc : [data.desc ?? ''];
-  const baseLines = allLines.slice(0, allLines.length - items.length);
-  const itemLines = allLines.slice(allLines.length - items.length);
+  // Base lines = everything except the last N lines (one per object)
+  const baseLines = allLines.slice(0, allLines.length - objects.length);
+  const objLines  = allLines.slice(allLines.length - objects.length);
 
-  function wrap(obj, text) {
+  // Base description — plain text, no tappable spans
+  let html = baseLines.join(' ');
+
+  // Each object line — wrap the object name as tappable
+  objLines.forEach((line, i) => {
+    const obj = objects[i];
+    if (!obj) { html += ' ' + line; return; }
+
     const id    = obj.id ?? obj.name;
     const label = obj.name;
-    const re    = new RegExp(`\\b(${esc(label)})\\b`, 'gi');
     const cls   = obj.discovered ? 'tap known' : 'tap';
-    return text.replace(re,
+    const re    = new RegExp(`\\b(${esc(label)})\\b`, 'gi');
+    const wrapped = line.replace(re,
       `<span class="${cls}" data-id="${id}" onclick="window.__tap(this)">${label}</span>`
     );
-  }
-
-  let html = baseLines.map(line => {
-    let text = line;
-    scenery.forEach(obj => { text = wrap(obj, text); });
-    return text;
-  }).join(' ');
-
-  itemLines.forEach((line, i) => {
-    const obj = items[i];
-    html += ' ' + (obj ? wrap(obj, line) : line);
+    html += ' ' + wrapped;
   });
 
   el.innerHTML = html;
