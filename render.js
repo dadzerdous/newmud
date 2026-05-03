@@ -81,13 +81,15 @@ window.__tap = function(el) {
   const obj = _objects[id];
   if (!obj) return;
 
-  // Mark as discovered on server
-  if (!obj.discovered) {
+  // Mark as discovered — only for native room items
+  if (!obj.discovered && obj.native !== false) {
     obj.discovered = true;
     el.className = 'tap known';
     window.sendText('discover ' + id);
     addChip(id, obj);
     updateDiscoveryCounter();
+  } else {
+    el.className = 'tap known';
   }
 
   openCtx(id);
@@ -100,7 +102,7 @@ function rebuildChips(currentIds) {
 
   row.innerHTML = '';
 
-  const discovered = Object.values(_objects).filter(o => o.discovered);
+  const discovered = Object.values(_objects).filter(o => o.discovered && o.native !== false);
 
   if (discovered.length === 0) {
     section.classList.add('hidden');
@@ -243,7 +245,7 @@ function setZones(exits) {
 
 // ── DISCOVERY COUNTER ────────────────────────────────────
 function updateDiscoveryCounter() {
-  const found = Object.values(_objects).filter(o => o.discovered).length;
+  const found = Object.values(_objects).filter(o => o.discovered && o.native !== false).length;
   const label = document.getElementById('discovered-label');
   if (label) {
     label.textContent = _totalDiscoverable > 0
@@ -265,8 +267,12 @@ export function setTotalDiscoverable(n) {
 // ── INVENTORY ITEM CLICKS ────────────────────────────────
 document.getElementById('log').addEventListener('click', e => {
   const obj = e.target.closest('.obj');
-  if (!obj) return;
-  e.stopPropagation();
+
+  // Clicked neutral area — close ctx
+  if (!obj) {
+    closeCtx();
+    return;
+  }
 
   const name    = obj.dataset.name;
   const actions = JSON.parse(obj.dataset.actions || '[]');
