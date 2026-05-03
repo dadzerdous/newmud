@@ -81,8 +81,15 @@ window.__tap = function(el) {
   const obj = _objects[id];
   if (!obj) return;
 
-  // Mark as discovered — only for native room items
-  if (!obj.discovered && obj.native !== false) {
+  // Non-native (dropped from another room) — just open ctx, never discover
+  if (obj.native === false) {
+    el.className = 'tap known';
+    openCtx(id);
+    return;
+  }
+
+  // Mark as discovered for native items
+  if (!obj.discovered) {
     obj.discovered = true;
     el.className = 'tap known';
     window.sendText('discover ' + id);
