@@ -282,8 +282,7 @@ document.getElementById('log').addEventListener('click', e => {
   }
 
   const name    = obj.dataset.name;
-  const rawActions = obj.dataset.actions || '[]';
-  const actions = JSON.parse(rawActions);
+  const actions = (obj.dataset.actions || '').split(',').filter(Boolean);
   if (!name || !actions.length) return;
 
   _activeCtx = '__inv__';
