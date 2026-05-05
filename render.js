@@ -143,6 +143,12 @@ function makeChip(id, obj, isPresent) {
   chip.textContent = (obj.emoji ? obj.emoji + ' ' : '') + obj.name;
   chip.addEventListener('click', e => {
     e.stopPropagation();
+    // If in targeting mode, use this chip as the target
+    if (_targeting) {
+      window.sendText(`${_targeting.action} ${_targeting.item} ${id}`);
+      stopTargeting();
+      return;
+    }
     _activeCtx === id ? closeCtx() : openCtx(id);
   });
   return chip;
