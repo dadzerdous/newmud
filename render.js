@@ -200,13 +200,15 @@ export function openHandCtx(itemId) {
   const btns = document.getElementById('ctx-btns');
   btns.innerHTML = '';
 
+  // Normalize display name to server id: "Fake Coin" → "fake_coin"
+  const sendId = itemId.toLowerCase().replace(/\s+/g, '_');
+
   ['look','use','throw','store','drop'].forEach(action => {
     const b = makeActionBtn(action, () => {
       if (action === 'throw') {
-        // Throw needs a target — server will prompt
-        window.sendText('throw ' + name.toLowerCase());
+        window.sendText('throw ' + sendId);
       } else {
-        window.sendText(action + ' ' + name.toLowerCase());
+        window.sendText(action + ' ' + sendId);
       }
       closeCtx();
     });
@@ -360,9 +362,10 @@ export function showInventory(pkt) {
 
       const btns = document.getElementById('ctx-btns');
       btns.innerHTML = '';
+      const sendId = itemId.toLowerCase().replace(/\s+/g, '_');
       actions.forEach(action => {
         const b = makeActionBtn(action, () => {
-          window.sendText(action + ' ' + itemId.toLowerCase());
+          window.sendText(action + ' ' + sendId);
           closeCtx();
         });
         btns.appendChild(b);
