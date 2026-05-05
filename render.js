@@ -12,7 +12,13 @@ let _totalDiscoverable = 0;
 
 // ── RENDER ROOM ──────────────────────────────────────────
 export function renderRoom(data, selfName) {
+  const isNewRoom = data.id !== _currentRoomId;
   _currentRoomId = data.id ?? data.title;
+
+  // Only clear log when actually changing rooms
+  if (isNewRoom) {
+    document.getElementById('log').innerHTML = '';
+  }
 
   // Build object lookup for this room
   _objects = {};
@@ -245,12 +251,10 @@ export function log(msg, cls) {
 export function clearRoom() {
   _objects   = {};
   _activeCtx = null;
-  // _disc no longer needed — server sends discovered flag per object
 
   document.getElementById('room-title').textContent = '';
   document.getElementById('room-desc').innerHTML    = '';
   document.getElementById('ctx-btns').innerHTML     = '';
-  document.getElementById('log').innerHTML          = '';
   document.getElementById('disc-chips').innerHTML   = '';
   document.getElementById('ctx').classList.add('hidden');
   document.getElementById('discovered').classList.add('hidden');
