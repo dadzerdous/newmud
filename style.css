@@ -375,3 +375,12 @@ html, body {
   color: var(--accent2);
   border-bottom-color: rgba(192,170,255,0.3);
 }
+
+/* ── INVENTORY CLICKABLE ITEMS ─────────── */
+.ll .obj {
+  color: var(--gold);
+  cursor: pointer;
+  border-bottom: 1px dotted rgba(240,192,96,0.4);
+  font-style: normal;
+}
+.ll .obj:active { color: #fff; }
