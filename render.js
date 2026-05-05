@@ -186,7 +186,7 @@ function openCtx(id) {
 }
 
 // ── HAND CONTEXT ─────────────────────────────────────────
-export function openHandCtx(itemId) {
+export function openHandCtx(itemId, otherHandItem) {
   if (!itemId) return;
 
   const def  = window.worldItems?.[itemId];
@@ -200,13 +200,19 @@ export function openHandCtx(itemId) {
   const btns = document.getElementById('ctx-btns');
   btns.innerHTML = '';
 
-  // Normalize display name to server id: "Fake Coin" → "fake_coin"
   const sendId = itemId.toLowerCase().replace(/\s+/g, '_');
 
-  ['look','use','throw','store','drop'].forEach(action => {
+  // Show combine if other hand also has an item
+  const actions = otherHandItem
+    ? ['look', 'combine', 'throw', 'store', 'drop']
+    : ['look', 'use', 'throw', 'store', 'drop'];
+
+  actions.forEach(action => {
     const b = makeActionBtn(action, () => {
       if (action === 'throw') {
         window.sendText('throw ' + sendId);
+      } else if (action === 'combine') {
+        window.sendText('use ' + sendId);
       } else {
         window.sendText(action + ' ' + sendId);
       }
