@@ -212,7 +212,7 @@ function makeActionBtn(action, onClick) {
   const b = document.createElement('button');
   b.style.cssText = (danger
     ? 'background:#180808;border:1px solid rgba(255,80,80,0.4);color:#ff7060;'
-    : 'background:#14122000;border:1px solid rgba(150,120,255,0.38);color:#b8a8f0;'
+    : 'background:#1e1a30;border:1px solid rgba(150,120,255,0.38);color:#b8a8f0;'
   ) + 'font-family:Georgia,serif;font-size:12px;padding:5px 13px;border-radius:14px;cursor:pointer;opacity:1;visibility:visible;display:inline-block;line-height:1.4;';
   b.textContent = action;
   b.addEventListener('click', e => { e.stopPropagation(); onClick(); });
