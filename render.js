@@ -190,7 +190,12 @@ export function openHandCtx(itemId) {
 
   ['look','use','throw','store','drop'].forEach(action => {
     const b = makeActionBtn(action, () => {
-      window.sendText(action + ' ' + name.toLowerCase());
+      if (action === 'throw') {
+        // Throw needs a target — server will prompt
+        window.sendText('throw ' + name.toLowerCase());
+      } else {
+        window.sendText(action + ' ' + name.toLowerCase());
+      }
       closeCtx();
     });
     btns.appendChild(b);
@@ -370,3 +375,38 @@ export function showInventory(pkt) {
   logEl.appendChild(wrapper);
   logEl.scrollTop = logEl.scrollHeight;
 }
+
+// ── TARGETING MODE ───────────────────────────────────────
+// Called when server asks player to pick a target
+let _targeting = null;
+
+export function startTargeting(pkt) {
+  _targeting = pkt; // { action, item, msg }
+
+  // Show prompt in log
+  log(`${pkt.msg} (tap something in the room)`, 'll-sys');
+
+  // Highlight all tappable elements
+  document.querySelectorAll('.tap, .dchip').forEach(el => {
+    el.classList.add('targeting');
+  });
+}
+
+function stopTargeting() {
+  _targeting = null;
+  document.querySelectorAll('.targeting').forEach(el => {
+    el.classList.remove('targeting');
+  });
+}
+
+// Override __tap to handle targeting mode
+const _originalTap = window.__tap;
+window.__tap = function(el) {
+  if (_targeting) {
+    const id = el.dataset.id;
+    window.sendText(`${_targeting.action} ${_targeting.item} ${id}`);
+    stopTargeting();
+    return;
+  }
+  _originalTap(el);
+};

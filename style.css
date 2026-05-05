@@ -384,3 +384,15 @@ html, body {
   font-style: normal;
 }
 .ll .obj:active { color: #fff; }
+
+/* ── TARGETING MODE ────────────────────── */
+.targeting {
+  color: #ff9040 !important;
+  border-bottom-color: rgba(255,144,64,0.5) !important;
+  animation: targetPulse 1s ease-in-out infinite;
+}
+
+@keyframes targetPulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.5; }
+}
