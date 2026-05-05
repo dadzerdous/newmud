@@ -304,3 +304,69 @@ document.getElementById('log').addEventListener('click', e => {
 
 // ── UTIL ─────────────────────────────────────────────────
 function esc(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
+// ── INVENTORY DISPLAY ────────────────────────────────────
+export function showInventory(pkt) {
+  const { hands, bag, items: defs } = pkt;
+  const logEl = document.getElementById('log');
+  if (!logEl) return;
+
+  const wrapper = document.createElement('div');
+  wrapper.className = 'll ll-sys';
+
+  const title = document.createElement('div');
+  title.textContent = 'You are carrying:';
+  title.style.marginBottom = '4px';
+  wrapper.appendChild(title);
+
+  function makeRow(itemId, label, actions) {
+    const def   = defs?.[itemId] || {};
+    const emoji = def.emoji || '';
+    const row   = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:6px;margin:2px 0;';
+
+    const name = document.createElement('span');
+    name.style.cssText = 'color:#f0c060;cursor:pointer;';
+    name.textContent = (emoji ? emoji + ' ' : '') + itemId + ' ';
+
+    const sub = document.createElement('em');
+    sub.style.cssText = 'color:#5a5070;font-size:11px;';
+    sub.textContent = label;
+
+    row.appendChild(name);
+    row.appendChild(sub);
+
+    // Click the row to open ctx
+    row.addEventListener('click', e => {
+      e.stopPropagation();
+      _activeCtx = '__inv__';
+      document.querySelectorAll('.dchip').forEach(c => c.classList.remove('active'));
+      document.getElementById('ctx-who').textContent = itemId;
+
+      const btns = document.getElementById('ctx-btns');
+      btns.innerHTML = '';
+      actions.forEach(action => {
+        const b = makeActionBtn(action, () => {
+          window.sendText(action + ' ' + itemId.toLowerCase());
+          closeCtx();
+        });
+        btns.appendChild(b);
+      });
+
+      document.getElementById('ctx').classList.remove('hidden');
+    });
+
+    return row;
+  }
+
+  if (hands.left)  wrapper.appendChild(makeRow(hands.left,  '(left hand)', ['look','drop','store']));
+  if (hands.right) wrapper.appendChild(makeRow(hands.right, '(right hand)', ['look','drop','store']));
+  bag.forEach(itemId => wrapper.appendChild(makeRow(itemId, '(bag)', ['look','retrieve','drop'])));
+
+  if (!hands.left && !hands.right && bag.length === 0) {
+    wrapper.textContent = 'You are carrying nothing.';
+  }
+
+  logEl.appendChild(wrapper);
+  logEl.scrollTop = logEl.scrollHeight;
+}
