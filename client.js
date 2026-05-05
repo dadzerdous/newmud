@@ -12,7 +12,7 @@ const WS_URL  = 'wss://muddygob-server-1.onrender.com';
 // ┌─────────────────────────────────────────────────────┐
 // │  MOCK MODE — true = offline dev, false = real server│
 // └─────────────────────────────────────────────────────┘
-const USE_MOCK = true;
+const USE_MOCK = false;
 
 let ws         = null;
 let selfName   = null;
