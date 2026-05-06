@@ -75,6 +75,16 @@ document.getElementById('hand-r').addEventListener('click', () => {
 // ── CLOSE CTX ON LOG TAP ─────────────────────────────────
 document.getElementById('log').addEventListener('click', closeCtx);
 
+// ── ROOM TITLE TAP → RESET VOTE ──────────────────────────
+document.getElementById('room-title').addEventListener('click', () => {
+  const title = document.getElementById('room-title');
+  // Flash hourglass briefly to confirm vote registered
+  const orig = title.textContent;
+  title.textContent = '⏳ ' + orig;
+  setTimeout(() => { title.textContent = orig; }, 1200);
+  sendText('resetvote');
+});
+
 // ── UPDATE DIRECTION BUTTONS ──────────────────────────────
 // Called by render.js after each room load
 window.updateDpad = function(exits) {
