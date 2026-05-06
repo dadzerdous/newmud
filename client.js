@@ -3,7 +3,7 @@
 // ════════════════════════════════════════
 
 import { renderRoom, log, clearRoom, restoreDiscovered, setTotalDiscoverable, showInventory, startTargeting } from './render.js';
-import { updateHUD, setHeld, setHands }   from './hud.js';
+import { updateHUD, setHeld, setHands, updateCombatState } from './hud.js';
 import { hideAuth, applyTheme, bindAuth } from './auth.js';
 import { MockSocket }                     from './mock.js';
 
@@ -99,6 +99,8 @@ function route(pkt) {
       window._room = pkt;
       if (pkt.totalDiscoverable) setTotalDiscoverable(pkt.totalDiscoverable);
       renderRoom(pkt, selfName);
+      // Show wield buttons only if combatants present in room
+      updateCombatState(!!(pkt.combatants?.length), false);
       break;
 
     case 'system':

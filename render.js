@@ -65,16 +65,25 @@ function renderDesc(data, objects) {
     if (!label) return;
 
     const cls = obj.discovered ? 'tap known' : 'tap';
-    const re  = new RegExp(`\\b(${esc(label)})\\b`, 'gi');
+
+    // Match the object name OR any word that starts with the name (e.g. "glint" matches "glints")
+    const re  = new RegExp(`(${esc(label)}\\w*)`, 'gi');
 
     if (re.test(html)) {
-      // Name found in description — wrap it
-      html = html.replace(new RegExp(`\\b(${esc(label)})\\b`, 'gi'),
-        `<span class="${cls}" data-id="${id}" onclick="window.__tap(this)">$1</span>`
-      );
+      // Name found in description — wrap the first match only
+      let replaced = false;
+      html = html.replace(new RegExp(`(${esc(label)}\\w*)`, 'gi'), (match) => {
+        if (replaced) return match;
+        replaced = true;
+        return `<span class="${cls}" data-id="${id}" onclick="window.__tap(this)">${match}</span>`;
+      });
     } else {
-      // Name not in description — append as standalone tappable
-      html += ` <span class="${cls}" data-id="${id}" onclick="window.__tap(this)">${obj.emoji ? obj.emoji + ' ' : ''}${label}</span>`;
+      // Name not in description — append roomDesc sentence if available, else just the name
+      const fallbackText = obj.roomDesc
+        ? obj.roomDesc.replace(new RegExp(`(${esc(label)}\\w*)`, 'gi'), (match) =>
+            `<span class="${cls}" data-id="${id}" onclick="window.__tap(this)">${match}</span>`)
+        : `<span class="${cls}" data-id="${id}" onclick="window.__tap(this)">${label}</span>`;
+      html += ' ' + fallbackText;
     }
   });
 

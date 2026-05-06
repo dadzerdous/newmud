@@ -291,14 +291,20 @@ html, body {
   height: var(--bot-h); flex-shrink: 0;
   background: var(--surf); border-top: 1px solid var(--border);
   display: flex; align-items: center; justify-content: space-between;
-  padding: 0 12px; gap: 8px;
+  padding: 0 12px;
 }
-#botbar-left { display: flex; align-items: center; gap: 8px; }
+#hands-center {
+  display: flex; align-items: center; justify-content: center;
+  gap: 6px; flex: 1;
+}
+#hand-l-wrap, #hand-r-wrap {
+  display: flex; align-items: center; gap: 4px;
+}
 .bot-btn {
   background: var(--surf2); border: 1px solid var(--border);
   border-radius: 9px; color: var(--text);
   font-family: Georgia, serif; font-size: 12px;
-  padding: 7px 12px; cursor: pointer;
+  padding: 7px 12px; cursor: pointer; flex-shrink: 0;
 }
 .bot-btn:active { background: var(--border2); }
 .bot-btn.danger { color: var(--danger); border-color: rgba(255,96,96,0.2); }
@@ -307,6 +313,24 @@ html, body {
   border-radius: 20px; padding: 5px 9px; font-size: 17px; cursor: pointer;
 }
 .hand:active { border-color: var(--gold); }
+.hand.wielding {
+  border-color: var(--accent);
+  box-shadow: 0 0 8px rgba(154,122,255,0.4);
+}
+
+/* Wield / Flee skill buttons next to hand pills */
+.wield-btn {
+  background: var(--surf2); border: 1px solid rgba(154,122,255,0.4);
+  border-radius: 14px; color: var(--accent2);
+  font-family: Georgia, serif; font-size: 11px;
+  padding: 5px 10px; cursor: pointer; white-space: nowrap;
+}
+.wield-btn:active { background: var(--accent); color: #000; }
+.wield-btn.flee {
+  border-color: rgba(255,96,96,0.5);
+  color: var(--danger);
+}
+.wield-btn.hidden { display: none; }
 
 /* ══════════════════════════════════════
    AUTH MODAL
