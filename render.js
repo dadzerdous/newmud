@@ -202,19 +202,24 @@ export function openHandCtx(itemId, otherHandItem) {
 
   const sendId = itemId.toLowerCase().replace(/\s+/g, '_');
 
-  // Custom label for use action (e.g. hatchet shows "chop")
-  const actionLabel = def?.actionLabel || 'use';
+  // Get hand actions from item def, or fallback defaults
+  let handActions = def?.actions?.hand || ['look', 'use', 'throw', 'store', 'drop'];
 
-  // Show combine if other hand also has an item, else show custom label
-  const actions = otherHandItem
-    ? ['look', 'combine', 'throw', 'store', 'drop']
-    : ['look', actionLabel, 'throw', 'store', 'drop'];
+  // Replace use/chop/etc with combine if other hand has an item
+  if (otherHandItem) {
+    handActions = handActions.map(a =>
+      (a !== 'look' && a !== 'throw' && a !== 'store' && a !== 'drop') ? 'combine' : a
+    );
+  }
 
-  actions.forEach(action => {
+  handActions.forEach(action => {
     const b = makeActionBtn(action, () => {
       if (action === 'throw') {
         window.sendText('throw ' + sendId);
-      } else if (action === 'combine' || action === actionLabel) {
+      } else if (action === 'combine') {
+        window.sendText('use ' + sendId);
+      } else if (action !== 'look' && action !== 'store' && action !== 'drop') {
+        // Custom action label (chop, use, etc) — send as use
         window.sendText('use ' + sendId);
       } else {
         window.sendText(action + ' ' + sendId);
@@ -386,9 +391,9 @@ export function showInventory(pkt) {
     return row;
   }
 
-  if (hands.left)  wrapper.appendChild(makeRow(hands.left,  '(left hand)', ['look','drop','store']));
-  if (hands.right) wrapper.appendChild(makeRow(hands.right, '(right hand)', ['look','drop','store']));
-  bag.forEach(itemId => wrapper.appendChild(makeRow(itemId, '(bag)', ['look','retrieve','drop'])));
+  if (hands.left)  wrapper.appendChild(makeRow(hands.left,  '(left hand)',  defs?.[hands.left]?.actions?.hand      || ['look','drop','store']));
+  if (hands.right) wrapper.appendChild(makeRow(hands.right, '(right hand)', defs?.[hands.right]?.actions?.hand     || ['look','drop','store']));
+  bag.forEach(itemId => wrapper.appendChild(makeRow(itemId, '(bag)', defs?.[itemId]?.actions?.inventory || ['look','retrieve','drop'])));
 
   if (!hands.left && !hands.right && bag.length === 0) {
     wrapper.textContent = 'You are carrying nothing.';
