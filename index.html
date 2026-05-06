@@ -53,6 +53,7 @@
         </div>
         <div id="log-divider"></div>
         <div id="log"></div>
+        <div id="inv-tray"><div id="inv-tray-inner"></div></div>
 
         <!-- SOUTH lives here, above input, inside #room column -->
         <button class="dir-btn dir-ns dim" id="dir-south" data-dir="south">↓ south</button>
@@ -76,16 +77,10 @@
   </div>
 
   <div id="botbar">
-    <button class="bot-btn" id="btn-bag">🎒</button>
-    <div id="hands-center">
-      <div id="hand-l-wrap">
-        <button class="wield-btn hidden" id="wield-l" data-hand="left"></button>
-        <div class="hand" id="hand-l">✋</div>
-      </div>
-      <div id="hand-r-wrap">
-        <div class="hand" id="hand-r">🤚</div>
-        <button class="wield-btn hidden" id="wield-r" data-hand="right"></button>
-      </div>
+    <div id="botbar-left">
+      <button class="bot-btn" id="btn-bag">🎒</button>
+      <div class="hand" id="hand-l">✋</div>
+      <div class="hand" id="hand-r">🤚</div>
     </div>
     <button class="bot-btn danger" id="btn-quit">quit</button>
   </div>

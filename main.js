@@ -4,8 +4,7 @@
 
 import { connect, sendText } from './client.js';
 import { showAuth }          from './auth.js';
-import { closeCtx, openHandCtx } from './render.js';
-import { toggleWield } from './hud.js';
+import { closeCtx, openHandCtx, closeTray } from './render.js';
 
 // ── ITEMS ─────────────────────────────────────────────────
 fetch('items.json')
@@ -50,7 +49,9 @@ document.addEventListener('keydown', e => {
 });
 
 // ── BOTTOM BAR ────────────────────────────────────────────
-document.getElementById('btn-bag').addEventListener('click',  () => sendText('inv'));
+document.getElementById('btn-bag').addEventListener('click', () => {
+  sendText('inv');
+});
 document.getElementById('btn-quit').addEventListener('click', () => {
   localStorage.removeItem('mg_token');
   sendText('quit');
@@ -69,18 +70,6 @@ document.getElementById('hand-r').addEventListener('click', () => {
   const other = document.getElementById('hand-l').dataset.held;
   if (held) openHandCtx(held, other || null);
   else sendText('hands');
-});
-
-// Wield / Flee buttons
-document.getElementById('wield-l').addEventListener('click', () => {
-  const btn = document.getElementById('wield-l');
-  if (btn.textContent === 'flee') sendText('flee');
-  else toggleWield('left');
-});
-document.getElementById('wield-r').addEventListener('click', () => {
-  const btn = document.getElementById('wield-r');
-  if (btn.textContent === 'flee') sendText('flee');
-  else toggleWield('right');
 });
 
 // ── CLOSE CTX ON LOG TAP ─────────────────────────────────

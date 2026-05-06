@@ -351,47 +351,62 @@ document.getElementById('log').addEventListener('click', e => {
 // ── UTIL ─────────────────────────────────────────────────
 function esc(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
 
-// ── INVENTORY DISPLAY ────────────────────────────────────
+// ── INVENTORY TRAY (slides up from bottom of log area) ──
+let _invOpen = false;
+
 export function showInventory(pkt) {
   const { hands, bag, items: defs } = pkt;
-  const logEl = document.getElementById('log');
-  if (!logEl) return;
+  const tray  = document.getElementById('inv-tray');
+  const inner = document.getElementById('inv-tray-inner');
+  if (!tray || !inner) return;
 
-  const wrapper = document.createElement('div');
-  wrapper.className = 'll ll-sys';
+  // Toggle: if already open, close it
+  if (_invOpen) {
+    closeTray();
+    return;
+  }
 
-  const title = document.createElement('div');
-  title.textContent = 'You are carrying:';
-  title.style.marginBottom = '4px';
-  wrapper.appendChild(title);
+  inner.innerHTML = '';
 
-  function makeRow(itemId, label, actions) {
-    const def   = defs?.[itemId] || {};
+  const isEmpty = !hands.left && !hands.right && bag.length === 0;
+  if (isEmpty) {
+    const msg = document.createElement('div');
+    msg.style.cssText = 'color:var(--muted);font-size:12px;padding:6px 0;font-style:italic;';
+    msg.textContent = 'You are carrying nothing.';
+    inner.appendChild(msg);
+  }
+
+  function makeRow(itemId, slotLabel, actions) {
+    const def   = defs?.[itemId] || window.worldItems?.[itemId] || {};
     const emoji = def.emoji || '';
-    const row   = document.createElement('div');
-    row.style.cssText = 'display:flex;align-items:center;gap:6px;margin:2px 0;';
+    const displayName = def.name || itemId;
+    const sendId = itemId.toLowerCase().replace(/\s+/g, '_');
 
-    const name = document.createElement('span');
-    name.style.cssText = 'color:#f0c060;cursor:pointer;';
-    name.textContent = (emoji ? emoji + ' ' : '') + itemId + ' ';
+    const row = document.createElement('div');
+    row.className = 'inv-row';
 
-    const sub = document.createElement('em');
-    sub.style.cssText = 'color:#5a5070;font-size:11px;';
-    sub.textContent = label;
+    const label = document.createElement('span');
+    label.className = 'inv-label';
+    label.textContent = (emoji ? emoji + ' ' : '') + displayName;
 
-    row.appendChild(name);
-    row.appendChild(sub);
+    const slot = document.createElement('span');
+    slot.className = 'inv-slot';
+    slot.textContent = slotLabel;
 
-    // Click the row to open ctx
+    row.appendChild(label);
+    row.appendChild(slot);
+
     row.addEventListener('click', e => {
       e.stopPropagation();
+      closeTray();
+
+      // Open ctx for this item
       _activeCtx = '__inv__';
       document.querySelectorAll('.dchip').forEach(c => c.classList.remove('active'));
-      document.getElementById('ctx-who').textContent = itemId;
+      document.getElementById('ctx-who').textContent = (emoji ? emoji + ' ' : '') + displayName;
 
       const btns = document.getElementById('ctx-btns');
       btns.innerHTML = '';
-      const sendId = itemId.toLowerCase().replace(/\s+/g, '_');
       actions.forEach(action => {
         const b = makeActionBtn(action, () => {
           window.sendText(action + ' ' + sendId);
@@ -399,23 +414,25 @@ export function showInventory(pkt) {
         });
         btns.appendChild(b);
       });
-
       document.getElementById('ctx').classList.remove('hidden');
     });
 
     return row;
   }
 
-  if (hands.left)  wrapper.appendChild(makeRow(hands.left,  '(left hand)',  defs?.[hands.left]?.actions?.hand      || ['look','drop','store']));
-  if (hands.right) wrapper.appendChild(makeRow(hands.right, '(right hand)', defs?.[hands.right]?.actions?.hand     || ['look','drop','store']));
-  bag.forEach(itemId => wrapper.appendChild(makeRow(itemId, '(bag)', defs?.[itemId]?.actions?.inventory || ['look','retrieve','drop'])));
+  if (hands.left)  inner.appendChild(makeRow(hands.left,  'left hand',  defs?.[hands.left]?.actions?.hand      || ['look','drop','store']));
+  if (hands.right) inner.appendChild(makeRow(hands.right, 'right hand', defs?.[hands.right]?.actions?.hand     || ['look','drop','store']));
+  bag.forEach(id  => inner.appendChild(makeRow(id, 'bag', defs?.[id]?.actions?.inventory || ['look','retrieve','drop'])));
 
-  if (!hands.left && !hands.right && bag.length === 0) {
-    wrapper.textContent = 'You are carrying nothing.';
-  }
+  // Slide open
+  _invOpen = true;
+  tray.classList.add('open');
+}
 
-  logEl.appendChild(wrapper);
-  logEl.scrollTop = logEl.scrollHeight;
+export function closeTray() {
+  _invOpen = false;
+  const tray = document.getElementById('inv-tray');
+  if (tray) tray.classList.remove('open');
 }
 
 // ── TARGETING MODE ───────────────────────────────────────
