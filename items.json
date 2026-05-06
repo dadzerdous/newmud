@@ -12,32 +12,33 @@
     "stealable": true,
     "throwable": true,
     "returns": false,
-
     "weapon": {
       "class": "blunt",
       "range": "melee",
       "baseDamage": 1,
       "element": "earth"
     },
-
     "progression": {
       "level": 1,
       "exp": 0,
       "skills": [],
-      "lockedSkills": ["throw"]
+      "lockedSkills": [
+        "throw"
+      ]
     },
-
     "variations": {
-      "races": ["goblin", "human", "elf"]
+      "races": [
+        "goblin",
+        "human",
+        "elf"
+      ]
     },
-
     "textByRace": {
       "goblin": "Food or weapon.",
       "human": "It's a rock.",
       "elf": "It hums faintly."
     }
   },
-
   "twig": {
     "id": "twig",
     "name": "Twig",
@@ -51,27 +52,25 @@
     "stealable": true,
     "throwable": false,
     "returns": false,
-
     "weapon": null,
-
     "progression": {
       "level": 1,
       "exp": 0,
       "skills": [],
       "lockedSkills": []
     },
-
     "variations": {
-      "races": ["goblin", "human"]
+      "races": [
+        "goblin",
+        "human"
+      ]
     },
-
     "textByRace": {
       "goblin": "Dry enough to burn. Maybe sharp enough to poke.",
       "human": "A small twig.",
       "elf": "Once part of something living."
     }
   },
-
   "ancient_key": {
     "id": "ancient_key",
     "name": "Ancient Key",
@@ -85,20 +84,20 @@
     "stealable": false,
     "throwable": false,
     "returns": false,
-
     "weapon": null,
-
     "progression": {
       "level": 1,
       "exp": 0,
       "skills": [],
       "lockedSkills": []
     },
-
     "variations": {
-      "races": ["goblin", "human", "elf"]
+      "races": [
+        "goblin",
+        "human",
+        "elf"
+      ]
     },
-
     "textByRace": {
       "goblin": "Shiny. Important. Probably cursed.",
       "human": "An old key, worn by time.",
@@ -126,12 +125,29 @@
       "lockedSkills": []
     },
     "variations": {
-      "races": ["goblin", "human", "elf"]
+      "races": [
+        "goblin",
+        "human",
+        "elf"
+      ]
     },
     "textByRace": {
       "goblin": "Shiny. Probably worthless. You want it anyway.",
       "human": "A coin, but the metal is wrong. A fake.",
       "elf": "The craftsmanship is crude. This was made to deceive."
+    }
+  },
+  "hatchet": {
+    "id": "hatchet",
+    "name": "Hatchet",
+    "emoji": "🪓",
+    "category": "weapon",
+    "slot": "hand",
+    "throwable": true,
+    "textByRace": {
+      "goblin": "You made this. That is terrifying and exciting.",
+      "human": "Rough but functional. A real weapon.",
+      "elf": "Crude. Effective. You feel strange holding it."
     }
   }
 }

@@ -9,6 +9,9 @@ import { MockSocket }                     from './mock.js';
 
 const WS_URL  = 'wss://muddygob-server-1.onrender.com';
 
+// Load item definitions for emoji/name lookup
+fetch('./items.json').then(r => r.json()).then(d => { window.worldItems = d; }).catch(() => {});
+
 // ┌─────────────────────────────────────────────────────┐
 // │  MOCK MODE — true = offline dev, false = real server│
 // └─────────────────────────────────────────────────────┘
@@ -103,6 +106,8 @@ function route(pkt) {
       break;
 
     case 'inventory':
+      // Update worldItems with server's item data
+      if (pkt.items) window.worldItems = { ...window.worldItems, ...pkt.items };
       showInventory(pkt);
       break;
 
