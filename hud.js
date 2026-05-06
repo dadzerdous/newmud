@@ -4,6 +4,7 @@
 
 let _hands    = { left: null, right: null };
 let _wielding = { left: false, right: false };
+let _inCombat = false;
 
 export function updateHUD(data) {
   if (!data) return;
@@ -56,4 +57,41 @@ function renderHands() {
 function setText(id, val) {
   const el = document.getElementById(id);
   if (el) el.textContent = val;
+}
+
+// Called from client.js when room packet arrives
+// hasCombatants — enemy present in room
+// inCombat — ATB fight actively running
+export function updateCombatState(hasCombatants, inCombat) {
+  _inCombat = inCombat ?? false;
+  renderWieldButtons(hasCombatants ?? false);
+}
+
+export function toggleWield(hand) {
+  if (!_hands[hand]) return;
+  _wielding[hand] = !_wielding[hand];
+  renderHands();
+  renderWieldButtons(true);
+  window.sendText(_wielding[hand] ? `wield ${_hands[hand]}` : `unwield ${_hands[hand]}`);
+}
+
+function renderWieldButtons(hasCombatants) {
+  ['left', 'right'].forEach(side => {
+    const btn  = document.getElementById(`wield-${side[0]}`);
+    const item = _hands[side];
+    const def  = item ? window.worldItems?.[item] : null;
+    const wieldable = def?.wieldable ?? (def?.category === 'weapon');
+    if (!btn) return;
+
+    if (_inCombat && _wielding[side]) {
+      btn.textContent = 'flee';
+      btn.classList.add('flee');
+      btn.classList.remove('hidden');
+    } else if (hasCombatants && item && wieldable) {
+      btn.textContent = 'wield';
+      btn.classList.remove('flee', 'hidden');
+    } else {
+      btn.classList.add('hidden');
+    }
+  });
 }
