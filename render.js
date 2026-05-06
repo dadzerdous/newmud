@@ -65,16 +65,25 @@ function renderDesc(data, objects) {
     if (!label) return;
 
     const cls = obj.discovered ? 'tap known' : 'tap';
-    const re  = new RegExp(`\\b(${esc(label)})\\b`, 'gi');
+
+    // Match the object name OR any word that starts with the name (e.g. "glint" matches "glints")
+    const re  = new RegExp(`(${esc(label)}\\w*)`, 'gi');
 
     if (re.test(html)) {
-      // Name found in description — wrap it
-      html = html.replace(new RegExp(`\\b(${esc(label)})\\b`, 'gi'),
-        `<span class="${cls}" data-id="${id}" onclick="window.__tap(this)">$1</span>`
-      );
+      // Name found in description — wrap the first match only
+      let replaced = false;
+      html = html.replace(new RegExp(`(${esc(label)}\\w*)`, 'gi'), (match) => {
+        if (replaced) return match;
+        replaced = true;
+        return `<span class="${cls}" data-id="${id}" onclick="window.__tap(this)">${match}</span>`;
+      });
     } else {
-      // Name not in description — append as standalone tappable
-      html += ` <span class="${cls}" data-id="${id}" onclick="window.__tap(this)">${obj.emoji ? obj.emoji + ' ' : ''}${label}</span>`;
+      // Name not in description — append roomDesc sentence if available, else just the name
+      const fallbackText = obj.roomDesc
+        ? obj.roomDesc.replace(new RegExp(`(${esc(label)}\\w*)`, 'gi'), (match) =>
+            `<span class="${cls}" data-id="${id}" onclick="window.__tap(this)">${match}</span>`)
+        : `<span class="${cls}" data-id="${id}" onclick="window.__tap(this)">${label}</span>`;
+      html += ' ' + fallbackText;
     }
   });
 
@@ -205,19 +214,17 @@ export function openHandCtx(itemId, otherHandItem) {
   // Get hand actions from item def, or fallback defaults
   let handActions = def?.actions?.hand || ['look', 'use', 'throw', 'store', 'drop'];
 
-  // When other hand has an item, always show combine
-  // Replace any custom action (use/chop/etc), or inject if none present (e.g. fake_coin)
+  // When other hand has item — inject combine, but keep named actions (chop, etc)
+  // Only replace generic 'use'; leave chop/harvest/etc intact alongside combine
   if (otherHandItem) {
-    const hasCustomAction = handActions.some(
-      a => a !== 'look' && a !== 'throw' && a !== 'store' && a !== 'drop'
-    );
-    if (hasCustomAction) {
-      handActions = handActions.map(a =>
-        (a !== 'look' && a !== 'throw' && a !== 'store' && a !== 'drop') ? 'combine' : a
-      );
-    } else {
-      handActions = ['look', 'combine', ...handActions.filter(a => a !== 'look')];
-    }
+    const KEEP = new Set(['look', 'throw', 'store', 'drop']);
+    const hasNamed = handActions.some(a => !KEEP.has(a) && a !== 'use');
+    handActions = handActions
+      .map(a => a === 'use' ? 'combine' : a)           // swap generic use → combine
+      .filter(a => a !== 'combine');                     // remove any existing combine first
+    // Re-insert combine after look (before named actions)
+    const lookIdx = handActions.indexOf('look');
+    handActions.splice(lookIdx + 1, 0, 'combine');
   }
 
   handActions.forEach(action => {
