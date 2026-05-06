@@ -351,88 +351,56 @@ document.getElementById('log').addEventListener('click', e => {
 // ── UTIL ─────────────────────────────────────────────────
 function esc(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
 
-// ── INVENTORY TRAY (slides up from bottom of log area) ──
-let _invOpen = false;
-
+// ── INVENTORY DISPLAY ────────────────────────────────────
 export function showInventory(pkt) {
   const { hands, bag, items: defs } = pkt;
-  const tray  = document.getElementById('inv-tray');
-  const inner = document.getElementById('inv-tray-inner');
-  if (!tray || !inner) return;
-
-  // Toggle: if already open, close it
-  if (_invOpen) {
-    closeTray();
-    return;
-  }
-
-  inner.innerHTML = '';
-
-  const isEmpty = !hands.left && !hands.right && bag.length === 0;
-  if (isEmpty) {
-    const msg = document.createElement('div');
-    msg.style.cssText = 'color:var(--muted);font-size:12px;padding:6px 0;font-style:italic;';
-    msg.textContent = 'You are carrying nothing.';
-    inner.appendChild(msg);
-  }
+  const logEl = document.getElementById('log');
+  if (!logEl) return;
 
   function makeRow(itemId, slotLabel, actions) {
-    const def   = defs?.[itemId] || window.worldItems?.[itemId] || {};
-    const emoji = def.emoji || '';
+    const def        = defs?.[itemId] || window.worldItems?.[itemId] || {};
+    const emoji      = def.emoji || '';
     const displayName = def.name || itemId;
-    const sendId = itemId.toLowerCase().replace(/\s+/g, '_');
+    const sendId     = itemId.toLowerCase().replace(/\s+/g, '_');
 
     const row = document.createElement('div');
-    row.className = 'inv-row';
+    row.className = 'll ll-sys';
+    row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:2px 0;cursor:pointer;';
 
     const label = document.createElement('span');
-    label.className = 'inv-label';
-    label.textContent = (emoji ? emoji + ' ' : '') + displayName;
+    label.className = 'obj';
+    label.dataset.name    = sendId;
+    label.dataset.actions = actions.join('|');
+    label.style.cssText   = 'color:var(--gold);cursor:pointer;';
+    label.textContent     = (emoji ? emoji + ' ' : '') + displayName;
 
-    const slot = document.createElement('span');
-    slot.className = 'inv-slot';
-    slot.textContent = slotLabel;
+    const slot = document.createElement('em');
+    slot.style.cssText  = 'color:var(--muted);font-size:11px;';
+    slot.textContent    = slotLabel;
 
     row.appendChild(label);
     row.appendChild(slot);
-
-    row.addEventListener('click', e => {
-      e.stopPropagation();
-      closeTray();
-
-      // Open ctx for this item
-      _activeCtx = '__inv__';
-      document.querySelectorAll('.dchip').forEach(c => c.classList.remove('active'));
-      document.getElementById('ctx-who').textContent = (emoji ? emoji + ' ' : '') + displayName;
-
-      const btns = document.getElementById('ctx-btns');
-      btns.innerHTML = '';
-      actions.forEach(action => {
-        const b = makeActionBtn(action, () => {
-          window.sendText(action + ' ' + sendId);
-          closeCtx();
-        });
-        btns.appendChild(b);
-      });
-      document.getElementById('ctx').classList.remove('hidden');
-    });
-
     return row;
   }
 
-  if (hands.left)  inner.appendChild(makeRow(hands.left,  'left hand',  defs?.[hands.left]?.actions?.hand      || ['look','drop','store']));
-  if (hands.right) inner.appendChild(makeRow(hands.right, 'right hand', defs?.[hands.right]?.actions?.hand     || ['look','drop','store']));
-  bag.forEach(id  => inner.appendChild(makeRow(id, 'bag', defs?.[id]?.actions?.inventory || ['look','retrieve','drop'])));
+  const isEmpty = !hands.left && !hands.right && bag.length === 0;
+  if (isEmpty) {
+    const d = document.createElement('div');
+    d.className   = 'll ll-sys';
+    d.textContent = 'You are carrying nothing.';
+    logEl.appendChild(d);
+  } else {
+    const title = document.createElement('div');
+    title.className   = 'll ll-sys';
+    title.textContent = 'Carrying:';
+    logEl.appendChild(title);
 
-  // Slide open
-  _invOpen = true;
-  tray.classList.add('open');
-}
+    if (hands.left)  logEl.appendChild(makeRow(hands.left,  'left',  defs?.[hands.left]?.actions?.hand      || ['look','drop','store']));
+    if (hands.right) logEl.appendChild(makeRow(hands.right, 'right', defs?.[hands.right]?.actions?.hand     || ['look','drop','store']));
+    bag.forEach(id  => logEl.appendChild(makeRow(id, 'bag', defs?.[id]?.actions?.inventory || ['look','retrieve','drop'])));
+  }
 
-export function closeTray() {
-  _invOpen = false;
-  const tray = document.getElementById('inv-tray');
-  if (tray) tray.classList.remove('open');
+  logEl.scrollTop = logEl.scrollHeight;
 }
 
 // ── TARGETING MODE ───────────────────────────────────────

@@ -4,7 +4,7 @@
 
 import { connect, sendText } from './client.js';
 import { showAuth }          from './auth.js';
-import { closeCtx, openHandCtx, closeTray } from './render.js';
+import { closeCtx, openHandCtx } from './render.js';
 
 // ── ITEMS ─────────────────────────────────────────────────
 fetch('items.json')
