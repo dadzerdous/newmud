@@ -56,11 +56,19 @@ document.getElementById('btn-quit').addEventListener('click', () => {
 });
 
 document.getElementById('hand-l').addEventListener('click', () => {
-  const held = document.getElementById('hand-l').dataset.held;
-  if (held) openHandCtx(held);
+  const el    = document.getElementById('hand-l');
+  const held  = el.dataset.held;
+  const other = document.getElementById('hand-r').dataset.held;
+  if (held) openHandCtx(held, other || null);
   else sendText('hands');
 });
-document.getElementById('hand-r').addEventListener('click', () => sendText('hands'));
+document.getElementById('hand-r').addEventListener('click', () => {
+  const el    = document.getElementById('hand-r');
+  const held  = el.dataset.held;
+  const other = document.getElementById('hand-l').dataset.held;
+  if (held) openHandCtx(held, other || null);
+  else sendText('hands');
+});
 
 // ── CLOSE CTX ON LOG TAP ─────────────────────────────────
 document.getElementById('log').addEventListener('click', closeCtx);
