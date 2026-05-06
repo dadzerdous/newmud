@@ -65,25 +65,16 @@ function renderDesc(data, objects) {
     if (!label) return;
 
     const cls = obj.discovered ? 'tap known' : 'tap';
-
-    // Match the object name OR any word that starts with the name (e.g. "glint" matches "glints")
-    const re  = new RegExp(`(${esc(label)}\\w*)`, 'gi');
+    const re  = new RegExp(`\\b(${esc(label)})\\b`, 'gi');
 
     if (re.test(html)) {
-      // Name found in description — wrap the first match only
-      let replaced = false;
-      html = html.replace(new RegExp(`(${esc(label)}\\w*)`, 'gi'), (match) => {
-        if (replaced) return match;
-        replaced = true;
-        return `<span class="${cls}" data-id="${id}" onclick="window.__tap(this)">${match}</span>`;
-      });
+      // Name found in description — wrap it
+      html = html.replace(new RegExp(`\\b(${esc(label)})\\b`, 'gi'),
+        `<span class="${cls}" data-id="${id}" onclick="window.__tap(this)">$1</span>`
+      );
     } else {
-      // Name not in description — append roomDesc sentence if available, else just the name
-      const fallbackText = obj.roomDesc
-        ? obj.roomDesc.replace(new RegExp(`(${esc(label)}\\w*)`, 'gi'), (match) =>
-            `<span class="${cls}" data-id="${id}" onclick="window.__tap(this)">${match}</span>`)
-        : `<span class="${cls}" data-id="${id}" onclick="window.__tap(this)">${label}</span>`;
-      html += ' ' + fallbackText;
+      // Name not in description — append as standalone tappable
+      html += ` <span class="${cls}" data-id="${id}" onclick="window.__tap(this)">${obj.emoji ? obj.emoji + ' ' : ''}${label}</span>`;
     }
   });
 
@@ -214,11 +205,19 @@ export function openHandCtx(itemId, otherHandItem) {
   // Get hand actions from item def, or fallback defaults
   let handActions = def?.actions?.hand || ['look', 'use', 'throw', 'store', 'drop'];
 
-  // Replace use/chop/etc with combine if other hand has an item
+  // When other hand has an item, always show combine
+  // Replace any custom action (use/chop/etc), or inject if none present (e.g. fake_coin)
   if (otherHandItem) {
-    handActions = handActions.map(a =>
-      (a !== 'look' && a !== 'throw' && a !== 'store' && a !== 'drop') ? 'combine' : a
+    const hasCustomAction = handActions.some(
+      a => a !== 'look' && a !== 'throw' && a !== 'store' && a !== 'drop'
     );
+    if (hasCustomAction) {
+      handActions = handActions.map(a =>
+        (a !== 'look' && a !== 'throw' && a !== 'store' && a !== 'drop') ? 'combine' : a
+      );
+    } else {
+      handActions = ['look', 'combine', ...handActions.filter(a => a !== 'look')];
+    }
   }
 
   handActions.forEach(action => {
