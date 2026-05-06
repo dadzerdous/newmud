@@ -214,17 +214,11 @@ export function openHandCtx(itemId, otherHandItem) {
   // Get hand actions from item def, or fallback defaults
   let handActions = def?.actions?.hand || ['look', 'use', 'throw', 'store', 'drop'];
 
-  // When other hand has item — inject combine, but keep named actions (chop, etc)
-  // Only replace generic 'use'; leave chop/harvest/etc intact alongside combine
+  // Replace use/chop/etc with combine if other hand has an item
   if (otherHandItem) {
-    const KEEP = new Set(['look', 'throw', 'store', 'drop']);
-    const hasNamed = handActions.some(a => !KEEP.has(a) && a !== 'use');
-    handActions = handActions
-      .map(a => a === 'use' ? 'combine' : a)           // swap generic use → combine
-      .filter(a => a !== 'combine');                     // remove any existing combine first
-    // Re-insert combine after look (before named actions)
-    const lookIdx = handActions.indexOf('look');
-    handActions.splice(lookIdx + 1, 0, 'combine');
+    handActions = handActions.map(a =>
+      (a !== 'look' && a !== 'throw' && a !== 'store' && a !== 'drop') ? 'combine' : a
+    );
   }
 
   handActions.forEach(action => {
@@ -319,7 +313,9 @@ export function setTotalDiscoverable(n) {
 
 // ── INVENTORY ITEM CLICKS ────────────────────────────────
 document.getElementById('log').addEventListener('click', e => {
-  const obj = e.target.closest('.obj');
+  // Check for inv row click (the row div or the label span inside it)
+  const obj = e.target.closest('.obj') || 
+    (e.target.closest('.ll-sys')?.querySelector('.obj'));
 
   // Clicked neutral area — close ctx
   if (!obj) {
@@ -329,17 +325,24 @@ document.getElementById('log').addEventListener('click', e => {
 
   const name    = obj.dataset.name;
   const actions = (obj.dataset.actions || '').split('|').filter(Boolean);
-  if (!name || !actions.length) return;
+  if (!name || !actions.length) {
+    closeCtx();
+    return;
+  }
 
+  e.stopPropagation();
   _activeCtx = '__inv__';
   document.querySelectorAll('.dchip').forEach(c => c.classList.remove('active'));
-  document.getElementById('ctx-who').textContent = name;
+
+  const def         = window.worldItems?.[name] || {};
+  const displayName = (def.emoji ? def.emoji + ' ' : '') + (def.name || name);
+  document.getElementById('ctx-who').textContent = displayName;
 
   const btns = document.getElementById('ctx-btns');
   btns.innerHTML = '';
   actions.forEach(action => {
     const b = makeActionBtn(action, () => {
-      window.sendText(action + ' ' + name.toLowerCase());
+      window.sendText(action + ' ' + name);
       closeCtx();
     });
     btns.appendChild(b);
@@ -357,49 +360,64 @@ export function showInventory(pkt) {
   const logEl = document.getElementById('log');
   if (!logEl) return;
 
-  function makeRow(itemId, slotLabel, actions) {
-    const def        = defs?.[itemId] || window.worldItems?.[itemId] || {};
-    const emoji      = def.emoji || '';
-    const displayName = def.name || itemId;
-    const sendId     = itemId.toLowerCase().replace(/\s+/g, '_');
+  const wrapper = document.createElement('div');
+  wrapper.className = 'll ll-sys';
 
-    const row = document.createElement('div');
-    row.className = 'll ll-sys';
-    row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:2px 0;cursor:pointer;';
+  const title = document.createElement('div');
+  title.textContent = 'You are carrying:';
+  title.style.marginBottom = '4px';
+  wrapper.appendChild(title);
 
-    const label = document.createElement('span');
-    label.className = 'obj';
-    label.dataset.name    = sendId;
-    label.dataset.actions = actions.join('|');
-    label.style.cssText   = 'color:var(--gold);cursor:pointer;';
-    label.textContent     = (emoji ? emoji + ' ' : '') + displayName;
+  function makeRow(itemId, label, actions) {
+    const def   = defs?.[itemId] || {};
+    const emoji = def.emoji || '';
+    const row   = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:6px;margin:2px 0;';
 
-    const slot = document.createElement('em');
-    slot.style.cssText  = 'color:var(--muted);font-size:11px;';
-    slot.textContent    = slotLabel;
+    const name = document.createElement('span');
+    name.style.cssText = 'color:#f0c060;cursor:pointer;';
+    name.textContent = (emoji ? emoji + ' ' : '') + itemId + ' ';
 
-    row.appendChild(label);
-    row.appendChild(slot);
+    const sub = document.createElement('em');
+    sub.style.cssText = 'color:#5a5070;font-size:11px;';
+    sub.textContent = label;
+
+    row.appendChild(name);
+    row.appendChild(sub);
+
+    // Click the row to open ctx
+    row.addEventListener('click', e => {
+      e.stopPropagation();
+      _activeCtx = '__inv__';
+      document.querySelectorAll('.dchip').forEach(c => c.classList.remove('active'));
+      document.getElementById('ctx-who').textContent = itemId;
+
+      const btns = document.getElementById('ctx-btns');
+      btns.innerHTML = '';
+      const sendId = itemId.toLowerCase().replace(/\s+/g, '_');
+      actions.forEach(action => {
+        const b = makeActionBtn(action, () => {
+          window.sendText(action + ' ' + sendId);
+          closeCtx();
+        });
+        btns.appendChild(b);
+      });
+
+      document.getElementById('ctx').classList.remove('hidden');
+    });
+
     return row;
   }
 
-  const isEmpty = !hands.left && !hands.right && bag.length === 0;
-  if (isEmpty) {
-    const d = document.createElement('div');
-    d.className   = 'll ll-sys';
-    d.textContent = 'You are carrying nothing.';
-    logEl.appendChild(d);
-  } else {
-    const title = document.createElement('div');
-    title.className   = 'll ll-sys';
-    title.textContent = 'Carrying:';
-    logEl.appendChild(title);
+  if (hands.left)  wrapper.appendChild(makeRow(hands.left,  '(left hand)',  defs?.[hands.left]?.actions?.hand      || ['look','drop','store']));
+  if (hands.right) wrapper.appendChild(makeRow(hands.right, '(right hand)', defs?.[hands.right]?.actions?.hand     || ['look','drop','store']));
+  bag.forEach(itemId => wrapper.appendChild(makeRow(itemId, '(bag)', defs?.[itemId]?.actions?.inventory || ['look','retrieve','drop'])));
 
-    if (hands.left)  logEl.appendChild(makeRow(hands.left,  'left',  defs?.[hands.left]?.actions?.hand      || ['look','drop','store']));
-    if (hands.right) logEl.appendChild(makeRow(hands.right, 'right', defs?.[hands.right]?.actions?.hand     || ['look','drop','store']));
-    bag.forEach(id  => logEl.appendChild(makeRow(id, 'bag', defs?.[id]?.actions?.inventory || ['look','retrieve','drop'])));
+  if (!hands.left && !hands.right && bag.length === 0) {
+    wrapper.textContent = 'You are carrying nothing.';
   }
 
+  logEl.appendChild(wrapper);
   logEl.scrollTop = logEl.scrollHeight;
 }
 
