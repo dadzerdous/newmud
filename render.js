@@ -164,6 +164,7 @@ function makeChip(id, obj, isPresent) {
 function openCtx(id) {
   _activeCtx = id;
   const obj  = _objects[id];
+  const actions = obj?.actions ?? ['look'];
 
   document.querySelectorAll('.dchip').forEach(c =>
     c.classList.toggle('active', c.dataset.id === id)
@@ -173,22 +174,6 @@ function openCtx(id) {
 
   const btns = document.getElementById('ctx-btns');
   btns.innerHTML = '';
-
-  // Determine actions based on whether item is present in room
-  const chip     = document.querySelector(`.dchip[data-id="${id}"]`);
-  const isAbsent = chip?.classList.contains('absent');
-
-  let actions;
-  if (obj?.type === 'scenery') {
-    // Scenery — always just look
-    actions = ['look'];
-  } else if (isAbsent) {
-    // Item discovered but not currently in room — look only
-    actions = ['look'];
-  } else {
-    // Item is on the ground — look and take
-    actions = ['look', 'take'];
-  }
 
   actions.forEach(action => {
     const b = makeActionBtn(action, () => {
@@ -201,7 +186,7 @@ function openCtx(id) {
 }
 
 // ── HAND CONTEXT ─────────────────────────────────────────
-export function openHandCtx(itemId) {
+export function openHandCtx(itemId, otherHandItem) {
   if (!itemId) return;
 
   const def  = window.worldItems?.[itemId];
@@ -215,13 +200,22 @@ export function openHandCtx(itemId) {
   const btns = document.getElementById('ctx-btns');
   btns.innerHTML = '';
 
-  // Normalize display name to server id: "Fake Coin" → "fake_coin"
   const sendId = itemId.toLowerCase().replace(/\s+/g, '_');
 
-  ['look','use','throw','store','drop'].forEach(action => {
+  // Custom label for use action (e.g. hatchet shows "chop")
+  const actionLabel = def?.actionLabel || 'use';
+
+  // Show combine if other hand also has an item, else show custom label
+  const actions = otherHandItem
+    ? ['look', 'combine', 'throw', 'store', 'drop']
+    : ['look', actionLabel, 'throw', 'store', 'drop'];
+
+  actions.forEach(action => {
     const b = makeActionBtn(action, () => {
       if (action === 'throw') {
         window.sendText('throw ' + sendId);
+      } else if (action === 'combine' || action === actionLabel) {
+        window.sendText('use ' + sendId);
       } else {
         window.sendText(action + ' ' + sendId);
       }
