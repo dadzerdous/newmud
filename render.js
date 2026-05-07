@@ -9,6 +9,7 @@ let _objects           = {};  // id → object def for current room
 let _currentRoomId     = null;
 let _activeCtx         = null;
 let _totalDiscoverable = 0;
+let _playersInRoom     = new Set(); // names of other players currently here
 
 // ── RENDER ROOM ──────────────────────────────────────────
 export function renderRoom(data, selfName) {
@@ -32,6 +33,9 @@ export function renderRoom(data, selfName) {
   // Title
   document.getElementById('room-title').textContent = data.title ?? '';
   window._onRoomChange?.();
+
+  // Track players in room for name highlighting in log
+  _playersInRoom = new Set((data.players || []));
 
   // Description
   renderDesc(data, data.objects || []);
@@ -274,7 +278,16 @@ export function log(msg, cls) {
   if (!el) return;
   const d = document.createElement('div');
   d.className = 'll ' + (cls ?? 'll-sys');
-  d.innerHTML = msg;
+  // Wrap any known player names in clickable spans
+  let html = msg;
+  _playersInRoom.forEach(name => {
+    if (!name) return;
+    const re = new RegExp(`\\b(${name})\\b`, 'g');
+    html = html.replace(re,
+      `<span class="player-name" data-name="${name}" style="color:var(--accent2);cursor:pointer;border-bottom:1px dotted rgba(192,170,255,0.4);">$1</span>`
+    );
+  });
+  d.innerHTML = html;
   el.appendChild(d);
   el.scrollTop = el.scrollHeight;
 }
