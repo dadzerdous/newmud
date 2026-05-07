@@ -336,15 +336,7 @@ html, body {
   border-color: var(--gold);
   box-shadow: 0 0 10px rgba(238,187,85,0.6), 0 0 20px rgba(238,187,85,0.2);
 }
-.wield-btn {
-  background: var(--surf2); border: 1px solid rgba(154,122,255,0.4);
-  border-radius: 14px; color: var(--accent2);
-  font-family: Georgia, serif; font-size: 11px;
-  padding: 5px 10px; cursor: pointer; white-space: nowrap;
-}
-.wield-btn:active { background: var(--accent); color: #000; }
-.wield-btn.flee { border-color: rgba(255,96,96,0.5); color: var(--danger); }
-.wield-btn.hidden { display: none; }
+/* wield-btn removed — engage lives in goblin ctx */
 
 /* ══════════════════════════════════════
    AUTH MODAL

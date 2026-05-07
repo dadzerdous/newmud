@@ -71,17 +71,7 @@ document.getElementById('hand-r').addEventListener('click', () => {
   else sendText('hands');
 });
 
-// ── WIELD BUTTONS ─────────────────────────────────────────
-document.getElementById('wield-l')?.addEventListener('click', () => {
-  const btn = document.getElementById('wield-l');
-  if (btn.textContent === 'flee') sendText('flee');
-  else toggleWield('left');
-});
-document.getElementById('wield-r')?.addEventListener('click', () => {
-  const btn = document.getElementById('wield-r');
-  if (btn.textContent === 'flee') sendText('flee');
-  else toggleWield('right');
-});
+// Wield buttons removed — engage lives in goblin ctx, wield in hand action bar
 
 // ── RETREAT ──────────────────────────────────────────────
 document.getElementById('btn-retreat')?.addEventListener('click', () => {

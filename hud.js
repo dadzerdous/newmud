@@ -188,9 +188,7 @@ function renderCombatBar(hasCombatants) {
             }
         });
 
-        // Engage buttons hidden in combat
-        document.getElementById('wield-l')?.classList.add('hidden');
-        document.getElementById('wield-r')?.classList.add('hidden');
+
 
     } else {
         // Normal mode
@@ -201,26 +199,11 @@ function renderCombatBar(hasCombatants) {
         skillL?.classList.add('hidden');
         skillR?.classList.add('hidden');
 
-        // Show engage buttons if combatants in room
-        renderEngageButtons(hasCombatants);
+        // Engage is in goblin ctx — no hand-level buttons needed
     }
 }
 
-function renderEngageButtons(hasCombatants) {
-    ['left', 'right'].forEach(side => {
-        const btn  = document.getElementById(`wield-${side[0]}`);
-        const item = _hands[side];
-        const def  = item ? window.worldItems?.[item] : null;
-        const wieldable = def?.wieldable ?? (def?.category === 'weapon');
-        if (!btn) return;
-        if (hasCombatants && item && wieldable) {
-            btn.textContent = 'engage';
-            btn.classList.remove('flee', 'hidden');
-        } else {
-            btn.classList.add('hidden');
-        }
-    });
-}
+// Engage buttons removed — engage is in the goblin's ctx action bar
 
 function setText(id, val) {
     const el = document.getElementById(id);
