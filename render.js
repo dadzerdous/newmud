@@ -50,7 +50,11 @@ export function renderRoom(data, selfName) {
   if (isNewRoom) {
     const others = (data.players || []).filter(n => n !== selfName);
     if (others.length) {
-      log(others.join(', ') + (others.length === 1 ? ' is' : ' are') + ' here.', 'll-sys');
+      const names = others.map(n =>
+        `<span class="player-name" data-name="${n}" style="color:var(--accent2);cursor:pointer;border-bottom:1px dotted rgba(192,170,255,0.4);">${n}</span>`
+      ).join(', ');
+      const verb = others.length === 1 ? ' is' : ' are';
+      log(names + verb + ' here.', 'll-sys');
     }
   }
 }
@@ -316,6 +320,30 @@ export function setTotalDiscoverable(n) {
 
 // ── INVENTORY ITEM CLICKS ────────────────────────────────
 document.getElementById('log').addEventListener('click', e => {
+  // Player name click
+  const playerEl = e.target.closest('.player-name');
+  if (playerEl) {
+    e.stopPropagation();
+    const name = playerEl.dataset.name;
+    _activeCtx = '__player__';
+    document.querySelectorAll('.dchip').forEach(c => c.classList.remove('active'));
+    document.getElementById('ctx-who').textContent = '👤 ' + name;
+    const btns = document.getElementById('ctx-btns');
+    btns.innerHTML = '';
+    const playerActions = [
+      { label: 'tell',   cmd: () => { window.sendText('tell ' + name + ' '); } },
+      { label: 'friend', cmd: () => { window.sendText('friend ' + name); closeCtx(); } },
+      { label: 'group',  cmd: () => { window.sendText('invite ' + name); closeCtx(); } },
+      { label: 'inspect',cmd: () => { window.sendText('inspect ' + name); closeCtx(); } },
+    ];
+    playerActions.forEach(({ label, cmd }) => {
+      const b = makeActionBtn(label, cmd);
+      btns.appendChild(b);
+    });
+    document.getElementById('ctx').classList.remove('hidden');
+    return;
+  }
+
   // Check for inv row click (the row div or the label span inside it)
   const obj = e.target.closest('.obj') || 
     (e.target.closest('.ll-sys')?.querySelector('.obj'));
