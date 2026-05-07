@@ -5,7 +5,7 @@
 import { connect, sendText } from './client.js';
 import { showAuth }          from './auth.js';
 import { closeCtx, openHandCtx } from './render.js';
-import { toggleWield } from './hud.js';
+import { toggleWield, isAtbReady } from './hud.js';
 
 // ── ITEMS ─────────────────────────────────────────────────
 fetch('items.json')
@@ -81,6 +81,29 @@ document.getElementById('wield-r')?.addEventListener('click', () => {
   const btn = document.getElementById('wield-r');
   if (btn.textContent === 'flee') sendText('flee');
   else toggleWield('right');
+});
+
+// ── RETREAT ──────────────────────────────────────────────
+document.getElementById('btn-retreat')?.addEventListener('click', () => {
+  sendText('retreat');
+});
+
+// ── SKILL BUTTONS ────────────────────────────────────────
+document.getElementById('skill-l')?.addEventListener('click', () => {
+  const btn  = document.getElementById('skill-l');
+  const skill = btn.dataset.skill;
+  const item  = btn.dataset.item;
+  if (skill && item && !btn.classList.contains('dim')) {
+    sendText(`skill ${skill} ${item}`);
+  }
+});
+document.getElementById('skill-r')?.addEventListener('click', () => {
+  const btn  = document.getElementById('skill-r');
+  const skill = btn.dataset.skill;
+  const item  = btn.dataset.item;
+  if (skill && item && !btn.classList.contains('dim')) {
+    sendText(`skill ${skill} ${item}`);
+  }
 });
 
 // ── ROOM TITLE → RESET VOTE ───────────────────────────────

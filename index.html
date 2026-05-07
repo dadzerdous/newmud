@@ -27,6 +27,8 @@
       <span class="stat" id="stat-level">Lv 1</span>
       <span class="stat" id="stat-energy">⚡100</span>
       <span class="stat" id="stat-stamina">💪100</span>
+      <span class="stat hidden" id="stat-hp">❤️100</span>
+      <span class="stat hidden" id="stat-npc-hp"></span>
     </div>
   </div>
 
@@ -76,16 +78,10 @@
   </div>
 
   <div id="botbar">
-    <button class="bot-btn" id="btn-bag">🎒</button>
-    <div id="hands-center">
-      <div id="hand-l-wrap">
-        <button class="wield-btn hidden" id="wield-l" data-hand="left"></button>
-        <div class="hand" id="hand-l">✋</div>
-      </div>
-      <div id="hand-r-wrap">
-        <div class="hand" id="hand-r">🤚</div>
-        <button class="wield-btn hidden" id="wield-r" data-hand="right"></button>
-      </div>
+    <div id="botbar-left">
+      <button class="bot-btn" id="btn-bag">🎒</button>
+      <div class="hand" id="hand-l">✋</div>
+      <div class="hand" id="hand-r">🤚</div>
     </div>
     <button class="bot-btn danger" id="btn-quit">quit</button>
   </div>

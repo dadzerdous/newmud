@@ -3,7 +3,7 @@
 // ════════════════════════════════════════
 
 import { renderRoom, log, clearRoom, restoreDiscovered, setTotalDiscoverable, showInventory, startTargeting } from './render.js';
-import { updateHUD, setHeld, setHands }   from './hud.js';
+import { updateHUD, setHeld, setHands, updateCombatState, handleCombatPacket } from './hud.js';
 import { hideAuth, applyTheme, bindAuth } from './auth.js';
 import { MockSocket }                     from './mock.js';
 

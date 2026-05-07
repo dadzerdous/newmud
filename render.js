@@ -202,7 +202,11 @@ function openCtx(id) {
 
   actions.forEach(action => {
     const b = makeActionBtn(action, () => {
-      window.sendText(action + ' ' + (obj?.name ?? id).toLowerCase());
+      if (action === 'engage') {
+        window.sendText('engage ' + id);
+      } else {
+        window.sendText(action + ' ' + (obj?.name ?? id).toLowerCase());
+      }
     });
     btns.appendChild(b);
   });
