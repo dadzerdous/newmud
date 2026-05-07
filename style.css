@@ -155,7 +155,7 @@ html, body {
   width: 28px;
   writing-mode: vertical-rl;
   transform: rotate(180deg);
-  border-right: 1px solid rgba(150,120,255,0.08);
+  border-left: 1px solid rgba(150,120,255,0.08);
   display: flex;
   align-items: center;
   justify-content: center;
