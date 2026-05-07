@@ -31,6 +31,7 @@ export function renderRoom(data, selfName) {
 
   // Title
   document.getElementById('room-title').textContent = data.title ?? '';
+  window._onRoomChange?.();
 
   // Description
   renderDesc(data, data.objects || []);
@@ -45,10 +46,12 @@ export function renderRoom(data, selfName) {
   // Movement
   setZones(data.exits || []);
 
-  // Players
-  const others = (data.players || []).filter(n => n !== selfName);
-  if (others.length) {
-    log(others.join(', ') + (others.length === 1 ? ' is' : ' are') + ' here.', 'll-sys');
+  // Players — only announce on fresh room entry, not on same-room refreshes
+  if (isNewRoom) {
+    const others = (data.players || []).filter(n => n !== selfName);
+    if (others.length) {
+      log(others.join(', ') + (others.length === 1 ? ' is' : ' are') + ' here.', 'll-sys');
+    }
   }
 }
 
