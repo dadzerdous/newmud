@@ -23,6 +23,7 @@ export function showAuth(mode) {
   _mode    = mode;
   _race    = null;
   _pronoun = null;
+  applyTheme('default');   // reset theme until race is picked
 
   document.getElementById('modal-title').textContent =
     mode === 'create' ? 'Create a Being' : 'Login';
@@ -57,7 +58,9 @@ export function hideAuth() {
 export function applyTheme(race) {
   const map  = { goblin:'goblin', elf:'elven', human:'human' };
   const link = document.getElementById('theme-css');
-  if (link) link.href = `themes/${map[race] ?? 'default'}.css`;
+  if (!link) return;
+  const theme = map[race] ?? 'default';
+  link.href = theme === 'default' ? '' : `themes/${theme}.css`;
 }
 
 // ── RACE ─────────────────────────────────────────────────
@@ -66,6 +69,7 @@ document.querySelectorAll('#race-choices .choice').forEach(btn => {
     _race = btn.dataset.val;
     document.querySelectorAll('#race-choices .choice').forEach(b => b.classList.remove('on'));
     btn.classList.add('on');
+    applyTheme(_race);   // preview theme on race select
     const allowed = RACE_PRONOUNS[_race] ?? [];
     _pronoun = null;
     document.querySelectorAll('#pronoun-choices .choice').forEach(b => {
