@@ -260,7 +260,7 @@ html, body {
   font-family: 'Courier New', Courier, monospace;
   letter-spacing: 0.2px;
 }
-.ll-sys   { color: #5a506e; font-style: italic; }
+.ll-sys   { color: #aaaaaa; font-style: italic; }
 .ll-say   { color: #d4a060; }
 .ll-yell  { color: #ff8840; }
 .ll-tell  { color: #70c8f0; }
