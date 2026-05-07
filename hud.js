@@ -41,15 +41,18 @@ export function setHeld(id) {
 
 // ── COMBAT STATE ─────────────────────────────────────────
 export function updateCombatState(hasCombatants, inCombat, stage) {
-    _inCombat    = inCombat ?? false;
-    _combatStage = stage ?? null;
+    // Only update from room packet if not currently in combat
+    // (combat packet is authoritative once fighting starts)
+    if (!_inCombat) {
+        _combatStage = stage ?? null;
+    }
     renderHands();
     renderCombatBar(hasCombatants ?? false);
 }
 
 // Called by client.js when combat packet arrives
 export function handleCombatPacket(pkt) {
-    _combatStage = pkt.stage;
+    _combatStage = pkt.stage;           // null = combat over
     _inCombat    = !!pkt.stage;
 
     renderHands();

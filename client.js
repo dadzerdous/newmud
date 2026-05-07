@@ -101,6 +101,12 @@ function route(pkt) {
       renderRoom(pkt, selfName);
       break;
 
+    case 'combat':
+      handleCombatPacket(pkt);
+      document.getElementById('stat-hp')?.classList.toggle('hidden', !pkt.stage);
+      document.getElementById('stat-npc-hp')?.classList.toggle('hidden', !pkt.stage);
+      break;
+
     case 'system':
       log(pkt.msg, 'll-sys');
       break;
