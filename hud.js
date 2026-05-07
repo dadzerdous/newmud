@@ -25,6 +25,7 @@ export function updateHUD(data) {
     if (data.level   != null) setText('stat-level',  `Lv ${data.level}`);
     if (data.energy  != null) setText('stat-energy',  `⚡${data.energy}`);
     if (data.stamina != null) setText('stat-stamina', `💪${data.stamina}`);
+    if (data.hp      != null) setText('stat-hp',      `❤️${data.hp}`);
 }
 
 export function setHands(hands) {
@@ -90,10 +91,22 @@ function startAtb(side) {
     el.style.animationPlayState = 'running';
 
     _atbTimers[side] = setTimeout(() => {
-        _atbReady[side] = true;
-        el.classList.remove('atb-filling');
-        el.classList.add('atb-ready');
-        el.style.animationPlayState = '';
+        // Auto-fire attack, then restart ATB loop
+        const item = _hands[side];
+        if (item && _wielding[side] && _combatStage === 'melee') {
+            window.sendText('attack ' + item);
+            // Restart ATB after a brief flash
+            el.classList.remove('atb-filling');
+            el.classList.add('atb-ready');
+            setTimeout(() => {
+                el.classList.remove('atb-ready');
+                startAtb(side);
+            }, 300);
+        } else {
+            _atbReady[side] = true;
+            el.classList.remove('atb-filling');
+            el.classList.add('atb-ready');
+        }
     }, speed);
 }
 
@@ -213,3 +226,16 @@ function setText(id, val) {
     const el = document.getElementById(id);
     if (el) el.textContent = val;
 }
+
+// Sync wielding state from server packet
+window._syncWielding = function(wielding) {
+    _wielding.left  = !!(wielding && _hands.left  && wielding[_hands.left]);
+    _wielding.right = !!(wielding && _hands.right && wielding[_hands.right]);
+    renderHands();
+    renderCombatBar(true);
+    // Restart ATB for newly wielded items if in melee
+    if (_combatStage === 'melee') {
+        if (_wielding.left  && _hands.left)  startAtb('left');
+        if (_wielding.right && _hands.right) startAtb('right');
+    }
+};

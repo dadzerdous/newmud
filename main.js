@@ -60,14 +60,14 @@ document.getElementById('hand-l').addEventListener('click', () => {
   const el    = document.getElementById('hand-l');
   const held  = el.dataset.held;
   const other = document.getElementById('hand-r').dataset.held;
-  if (held) openHandCtx(held, other || null);
+  if (held) openHandCtx(held, other || null, 'left');
   else sendText('hands');
 });
 document.getElementById('hand-r').addEventListener('click', () => {
   const el    = document.getElementById('hand-r');
   const held  = el.dataset.held;
   const other = document.getElementById('hand-l').dataset.held;
-  if (held) openHandCtx(held, other || null);
+  if (held) openHandCtx(held, other || null, 'right');
   else sendText('hands');
 });
 

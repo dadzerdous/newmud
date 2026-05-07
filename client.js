@@ -101,9 +101,13 @@ function route(pkt) {
       renderRoom(pkt, selfName);
       break;
 
+    case 'wielding':
+      // Update hand wielding state from server
+      if (window._syncWielding) window._syncWielding(pkt.wielding);
+      break;
+
     case 'combat':
       handleCombatPacket(pkt);
-      document.getElementById('stat-hp')?.classList.toggle('hidden', !pkt.stage);
       document.getElementById('stat-npc-hp')?.classList.toggle('hidden', !pkt.stage);
       break;
 

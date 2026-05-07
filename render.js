@@ -213,7 +213,7 @@ function openCtx(id) {
 }
 
 // ── HAND CONTEXT ─────────────────────────────────────────
-export function openHandCtx(itemId, otherHandItem) {
+export function openHandCtx(itemId, otherHandItem, hand) {
   if (!itemId) return;
 
   const def  = window.worldItems?.[itemId];
@@ -232,11 +232,18 @@ export function openHandCtx(itemId, otherHandItem) {
   // Get hand actions from item def, or fallback defaults
   let handActions = def?.actions?.hand || ['look', 'use', 'throw', 'store', 'drop'];
 
-  // Replace use/chop/etc with combine if other hand has an item
-  if (otherHandItem) {
-    handActions = handActions.map(a =>
-      (a !== 'look' && a !== 'throw' && a !== 'store' && a !== 'drop') ? 'combine' : a
-    );
+  // If wielded — lock to look + unwield only
+  const handEl    = document.getElementById(hand === 'left' ? 'hand-l' : 'hand-r');
+  const isWielded = handEl?.classList.contains('wielding');
+
+  if (isWielded) {
+    handActions = ['look', 'unwield'];
+  } else if (otherHandItem) {
+    // Inject combine, keep named actions
+    const KEEP = new Set(['look', 'throw', 'store', 'drop']);
+    handActions = handActions.map(a => a === 'use' ? 'combine' : a).filter(a => a !== 'combine');
+    const lookIdx = handActions.indexOf('look');
+    handActions.splice(lookIdx + 1, 0, 'combine');
   }
 
   handActions.forEach(action => {
@@ -245,8 +252,11 @@ export function openHandCtx(itemId, otherHandItem) {
         window.sendText('throw ' + sendId);
       } else if (action === 'combine') {
         window.sendText('use ' + sendId);
+      } else if (action === 'wield') {
+        window.sendText('wield ' + sendId);
+      } else if (action === 'unwield') {
+        window.sendText('unwield ' + sendId);
       } else if (action !== 'look' && action !== 'store' && action !== 'drop') {
-        // Custom action label (chop, use, etc) — send as use
         window.sendText('use ' + sendId);
       } else {
         window.sendText(action + ' ' + sendId);
