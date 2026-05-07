@@ -72,7 +72,7 @@ export function toggleWield(hand) {
   _wielding[hand] = !_wielding[hand];
   renderHands();
   renderWieldButtons(true);
-  window.sendText(_wielding[hand] ? `wield ${_hands[hand]}` : `unwield ${_hands[hand]}`);
+  window.sendText(_wielding[hand] ? `engage ${_hands[hand]}` : `disengage ${_hands[hand]}`);
 }
 
 function renderWieldButtons(hasCombatants) {
@@ -88,7 +88,7 @@ function renderWieldButtons(hasCombatants) {
       btn.classList.add('flee');
       btn.classList.remove('hidden');
     } else if (hasCombatants && item && wieldable) {
-      btn.textContent = 'wield';
+      btn.textContent = 'engage';
       btn.classList.remove('flee', 'hidden');
     } else {
       btn.classList.add('hidden');

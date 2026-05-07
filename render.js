@@ -74,6 +74,7 @@ function renderDesc(data, objects) {
     const id    = obj.id ?? obj.name;
     const label = obj.name;
     if (!label) return;
+    if (obj.hidden) return;  // hidden NPCs — count in total but not tappable yet
 
     const cls = obj.discovered ? 'tap known' : 'tap';
 
@@ -135,7 +136,7 @@ function rebuildChips(currentIds) {
 
   row.innerHTML = '';
 
-  const discovered = Object.values(_objects).filter(o => o.discovered && o.native !== false);
+  const discovered = Object.values(_objects).filter(o => o.discovered && o.native !== false && !o.hidden);
 
   if (discovered.length === 0) {
     section.classList.add('hidden');
