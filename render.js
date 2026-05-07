@@ -75,6 +75,7 @@ function renderDesc(data, objects) {
     const label = obj.name;
     if (!label) return;
     if (obj.hidden) return;  // hidden NPCs — count in total but not tappable yet
+    if (!obj.actions || obj.actions.length === 0) return;  // no actions = not interactive
 
     const cls = obj.discovered ? 'tap known' : 'tap';
 
