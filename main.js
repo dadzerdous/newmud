@@ -72,18 +72,41 @@ document.getElementById('hand-r').addEventListener('click', () => {
   else sendText('hands');
 });
 
-// ── CLOSE CTX ON LOG TAP ─────────────────────────────────
-document.getElementById('log').addEventListener('click', closeCtx);
+// ── CLOSE CTX ON LOG TAP — handled in render.js log click handler ──
 
-// ── ROOM TITLE TAP → RESET VOTE ──────────────────────────
+// ── ROOM TITLE TAP → shows ⏳, ⏳ tap → vote ────────────
+let _resetVotePending = false;
+
 document.getElementById('room-title').addEventListener('click', () => {
-  const title = document.getElementById('room-title');
-  // Flash hourglass briefly to confirm vote registered
-  const orig = title.textContent;
-  title.textContent = '⏳ ' + orig;
-  setTimeout(() => { title.textContent = orig; }, 1200);
-  sendText('resetvote');
+  const btn = document.getElementById('reset-btn');
+  if (!btn) return;
+  if (btn.style.display === 'none') {
+    btn.style.display = '';   // show hourglass
+  }
 });
+
+document.getElementById('reset-btn').addEventListener('click', e => {
+  e.stopPropagation();
+  const btn = document.getElementById('reset-btn');
+  if (_resetVotePending) {
+    // Second tap — cancel vote
+    _resetVotePending = false;
+    btn.style.display = 'none';
+    sendText('resetcancel');
+  } else {
+    // First tap — fire vote
+    _resetVotePending = true;
+    btn.textContent   = '⌛';  // flips to show vote is in
+    sendText('resetvote');
+  }
+});
+
+// Hide hourglass and reset state when room changes
+window._onRoomChange = function() {
+  _resetVotePending = false;
+  const btn = document.getElementById('reset-btn');
+  if (btn) { btn.style.display = 'none'; btn.textContent = '⏳'; }
+};
 
 // ── UPDATE DIRECTION BUTTONS ──────────────────────────────
 // Called by render.js after each room load
