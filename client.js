@@ -99,6 +99,7 @@ function route(pkt) {
       window._room = pkt;
       if (pkt.totalDiscoverable) setTotalDiscoverable(pkt.totalDiscoverable);
       renderRoom(pkt, selfName);
+      updateCombatState(!!(pkt.combatants?.length));
       break;
 
     case 'wielding':
@@ -108,7 +109,6 @@ function route(pkt) {
 
     case 'combat':
       handleCombatPacket(pkt);
-      document.getElementById('stat-npc-hp')?.classList.toggle('hidden', !pkt.stage);
       break;
 
     case 'system':

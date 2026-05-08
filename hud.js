@@ -1,20 +1,18 @@
 // ════════════════════════════════════════
 // hud.js — HUD stats + hands + combat
+// Single source of truth: _combatState
 // ════════════════════════════════════════
 
-let _hands    = { left: null, right: null };
-let _wielding = { left: false, right: false };
-let _inCombat = false;
-let _combatStage = null;  // 'notice' | 'approach' | 'melee' | null
-let _atbTimers = { left: null, right: null };
-let _atbReady  = { left: false, right: false };
+let _hands       = { left: null, right: null };
+let _wielding    = { left: false, right: false };
+let _combatState = 'idle'; // idle | notice | approach | melee
+let _atbTimers   = { left: null, right: null };
 
-// ATB fill intervals (ms) per item — fallback 2500
 function getAtbSpeed(itemId) {
-    const def = window.worldItems?.[itemId];
-    return def?.atbSpeed ?? 2500;
+    return window.worldItems?.[itemId]?.atbSpeed ?? 2500;
 }
 
+// ── HUD ──────────────────────────────────────────────────
 export function updateHUD(data) {
     if (!data) return;
     if (data.name || data.race || data.pronoun) {
@@ -28,11 +26,13 @@ export function updateHUD(data) {
     if (data.hp      != null) setText('stat-hp',      `❤️${data.hp}`);
 }
 
+// ── HANDS ────────────────────────────────────────────────
 export function setHands(hands) {
     _hands = hands ?? { left: null, right: null };
-    if (!_hands.left)  { _wielding.left  = false; stopAtb('left'); }
+    if (!_hands.left)  { _wielding.left  = false; stopAtb('left');  }
     if (!_hands.right) { _wielding.right = false; stopAtb('right'); }
     renderHands();
+    renderBotbar();
 }
 
 export function setHeld(id) {
@@ -41,103 +41,90 @@ export function setHeld(id) {
 }
 
 // ── COMBAT STATE ─────────────────────────────────────────
-export function updateCombatState(hasCombatants, inCombat, stage) {
-    // Only update from room packet if not currently in combat
-    // (combat packet is authoritative once fighting starts)
-    if (!_inCombat) {
-        _combatStage = stage ?? null;
-    }
-    renderHands();
-    renderCombatBar(hasCombatants ?? false);
-}
-
-// Called by client.js when combat packet arrives
+// Called from client.js on every 'combat' packet
 export function handleCombatPacket(pkt) {
-    _combatStage = pkt.stage;           // null = combat over
-    _inCombat    = !!pkt.stage;
+    const prev = _combatState;
+    _combatState = pkt.stage ?? 'idle';
+
+    if (pkt.playerHp != null) setText('stat-hp', `❤️${pkt.playerHp}`);
 
     renderHands();
-    renderCombatBar(true);
+    renderBotbar();
 
-    // Start ATB when melee begins
-    if (pkt.stage === 'melee') {
+    // ATB — only runs in melee
+    if (_combatState === 'melee') {
         if (_wielding.left  && _hands.left)  startAtb('left');
         if (_wielding.right && _hands.right) startAtb('right');
     } else {
         stopAtb('left');
         stopAtb('right');
     }
+}
 
-    // Update HP display
-    if (pkt.playerHp != null) setText('stat-hp', `❤️${pkt.playerHp}`);
-    if (pkt.npcId && pkt.npcHp != null) {
-        setText('stat-npc-hp', `💀${pkt.npcHp}`);
-    }
+// Called from client.js on 'room' packet — only updates hasCombatants hint
+export function updateCombatState(hasCombatants) {
+    // Don't override active combat stage from room packets
+    renderBotbar();
 }
 
 // ── ATB ──────────────────────────────────────────────────
 function startAtb(side) {
     stopAtb(side);
-    _atbReady[side] = false;
-    const el = document.getElementById(`hand-${side[0]}`);
+    const el    = document.getElementById(`hand-${side[0]}`);
+    const speed = getAtbSpeed(_hands[side]);
     if (!el) return;
 
-    const speed = getAtbSpeed(_hands[side]);
     el.classList.remove('atb-ready');
     el.classList.add('atb-filling');
-
-    // CSS animation drives the fill — we just set duration
     el.style.setProperty('--atb-duration', `${speed}ms`);
-    el.style.animationPlayState = 'running';
 
     _atbTimers[side] = setTimeout(() => {
-        // Auto-fire attack, then restart ATB loop
-        const item = _hands[side];
-        if (item && _wielding[side] && _combatStage === 'melee') {
-            window.sendText('attack ' + item);
-            // Restart ATB after a brief flash
-            el.classList.remove('atb-filling');
-            el.classList.add('atb-ready');
-            setTimeout(() => {
-                el.classList.remove('atb-ready');
-                startAtb(side);
-            }, 300);
-        } else {
-            _atbReady[side] = true;
-            el.classList.remove('atb-filling');
-            el.classList.add('atb-ready');
-        }
+        if (_combatState !== 'melee' || !_wielding[side]) return;
+        // Auto-fire
+        window.sendText('attack ' + _hands[side]);
+        el.classList.remove('atb-filling');
+        el.classList.add('atb-ready');
+        setTimeout(() => {
+            el.classList.remove('atb-ready');
+            if (_combatState === 'melee' && _wielding[side]) startAtb(side);
+        }, 300);
     }, speed);
 }
 
 function stopAtb(side) {
     if (_atbTimers[side]) { clearTimeout(_atbTimers[side]); _atbTimers[side] = null; }
-    _atbReady[side] = false;
     const el = document.getElementById(`hand-${side[0]}`);
-    if (el) {
-        el.classList.remove('atb-filling', 'atb-ready');
-        el.style.animationPlayState = '';
-    }
+    if (el) el.classList.remove('atb-filling', 'atb-ready');
 }
-
-export function isAtbReady(side) { return _atbReady[side]; }
 
 // ── WIELD ────────────────────────────────────────────────
 export function toggleWield(hand) {
     if (!_hands[hand]) return;
     _wielding[hand] = !_wielding[hand];
     renderHands();
-    renderCombatBar(true);
-    window.sendText(_wielding[hand] ? `engage ${_hands[hand]}` : `disengage ${_hands[hand]}`);
+    renderBotbar();
+    window.sendText(_wielding[hand] ? `wield ${_hands[hand]}` : `unwield ${_hands[hand]}`);
 }
 
-// ── RENDER ───────────────────────────────────────────────
+// Sync from server 'wielding' packet
+window._syncWielding = function(wielding) {
+    _wielding.left  = !!(wielding?.[_hands.left]);
+    _wielding.right = !!(wielding?.[_hands.right]);
+    renderHands();
+    renderBotbar();
+    if (_combatState === 'melee') {
+        if (_wielding.left  && _hands.left)  startAtb('left');
+        if (_wielding.right && _hands.right) startAtb('right');
+    }
+};
+
+// ── RENDER HANDS ─────────────────────────────────────────
 function renderHands() {
     ['left', 'right'].forEach(side => {
         const el  = document.getElementById(`hand-${side[0]}`);
         const def = window.worldItems?.[_hands[side]];
         if (!el) return;
-        el.textContent = _hands[side] ? (def?.emoji ?? '❓') : (side === 'left' ? '✋' : '🤚');
+        el.textContent  = _hands[side] ? (def?.emoji ?? '❓') : (side === 'left' ? '✋' : '🤚');
         el.dataset.held = _hands[side] ?? '';
         el.dataset.hand = side;
         el.classList.toggle('wielding',   !!_wielding[side]);
@@ -145,37 +132,34 @@ function renderHands() {
     });
 }
 
-function renderCombatBar(hasCombatants) {
-    const inCombat  = _inCombat || !!_combatStage;
-    const bar       = document.getElementById('botbar');
+// ── RENDER BOTBAR ─────────────────────────────────────────
+function renderBotbar() {
+    const inCombat = _combatState !== 'idle';
     const bagBtn    = document.getElementById('btn-bag');
     const quitBtn   = document.getElementById('btn-quit');
     const retreatBtn= document.getElementById('btn-retreat');
     const skillL    = document.getElementById('skill-l');
     const skillR    = document.getElementById('skill-r');
 
-    if (!bar) return;
-
     if (inCombat) {
-        // Transform botbar for combat
+        bagBtn?.setAttribute('disabled', true);
         bagBtn?.classList.add('locked');
-        bagBtn && (bagBtn.disabled = true);
         quitBtn?.classList.add('hidden');
         retreatBtn?.classList.remove('hidden');
         skillL?.classList.remove('hidden');
         skillR?.classList.remove('hidden');
 
-        // Update skill buttons per wielded item
+        // Skill slots — show item emoji or locked placeholder
         ['left', 'right'].forEach(side => {
-            const btn   = side === 'left' ? skillL : skillR;
+            const btn = side === 'left' ? skillL : skillR;
             if (!btn) return;
-            const item  = _hands[side];
-            const def   = item ? window.worldItems?.[item] : null;
-            const skill = def?.skills?.[0]; // first unlocked skill
+            const item = _hands[side];
+            const def  = item ? window.worldItems?.[item] : null;
+            const skill = def?.skills?.[0];
             if (_wielding[side] && skill) {
-                btn.textContent = skill.emoji ?? skill.label ?? '⚔️';
+                btn.textContent = skill.emoji ?? '⚔️';
                 btn.classList.remove('dim');
-                btn.dataset.skill = skill.label;
+                btn.dataset.skill = skill.label ?? '';
                 btn.dataset.item  = item;
             } else if (_wielding[side] && item) {
                 btn.textContent = def?.emoji ?? '⚔️';
@@ -188,37 +172,17 @@ function renderCombatBar(hasCombatants) {
             }
         });
 
-
-
     } else {
-        // Normal mode
+        bagBtn?.removeAttribute('disabled');
         bagBtn?.classList.remove('locked');
-        bagBtn && (bagBtn.disabled = false);
         quitBtn?.classList.remove('hidden');
         retreatBtn?.classList.add('hidden');
         skillL?.classList.add('hidden');
         skillR?.classList.add('hidden');
-
-        // Engage is in goblin ctx — no hand-level buttons needed
     }
 }
-
-// Engage buttons removed — engage is in the goblin's ctx action bar
 
 function setText(id, val) {
     const el = document.getElementById(id);
     if (el) el.textContent = val;
 }
-
-// Sync wielding state from server packet
-window._syncWielding = function(wielding) {
-    _wielding.left  = !!(wielding && _hands.left  && wielding[_hands.left]);
-    _wielding.right = !!(wielding && _hands.right && wielding[_hands.right]);
-    renderHands();
-    renderCombatBar(true);
-    // Restart ATB for newly wielded items if in melee
-    if (_combatStage === 'melee') {
-        if (_wielding.left  && _hands.left)  startAtb('left');
-        if (_wielding.right && _hands.right) startAtb('right');
-    }
-};
