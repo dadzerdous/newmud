@@ -5,7 +5,7 @@
 import { connect, sendText } from './client.js';
 import { showAuth }          from './auth.js';
 import { closeCtx, openHandCtx } from './render.js';
-import { toggleWield, isAtbReady } from './hud.js';
+import { toggleWield } from './hud.js';
 
 // ── ITEMS ─────────────────────────────────────────────────
 fetch('items.json')
@@ -71,8 +71,6 @@ document.getElementById('hand-r').addEventListener('click', () => {
   else sendText('hands');
 });
 
-// Wield buttons removed — engage lives in goblin ctx, wield in hand action bar
-
 // ── RETREAT ──────────────────────────────────────────────
 document.getElementById('btn-retreat')?.addEventListener('click', () => {
   sendText('retreat');
@@ -80,7 +78,7 @@ document.getElementById('btn-retreat')?.addEventListener('click', () => {
 
 // ── SKILL BUTTONS ────────────────────────────────────────
 document.getElementById('skill-l')?.addEventListener('click', () => {
-  const btn  = document.getElementById('skill-l');
+  const btn   = document.getElementById('skill-l');
   const skill = btn.dataset.skill;
   const item  = btn.dataset.item;
   if (skill && item && !btn.classList.contains('dim')) {
@@ -88,7 +86,7 @@ document.getElementById('skill-l')?.addEventListener('click', () => {
   }
 });
 document.getElementById('skill-r')?.addEventListener('click', () => {
-  const btn  = document.getElementById('skill-r');
+  const btn   = document.getElementById('skill-r');
   const skill = btn.dataset.skill;
   const item  = btn.dataset.item;
   if (skill && item && !btn.classList.contains('dim')) {
