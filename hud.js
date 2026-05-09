@@ -57,7 +57,13 @@ export function handleCombatPacket(pkt) {
         const leftShouldFire  = _wielding.left  || !_hands.left;
         const rightShouldFire = _wielding.right || !_hands.right;
         if (leftShouldFire)  startAtb('left');
-        if (rightShouldFire) startAtb('right');
+        if (rightShouldFire) {
+            // Stagger right hand by half its ATB speed so hands don't fire together
+            const rightSpeed = getAtbSpeed(_hands.right);
+            setTimeout(() => {
+                if (_combatState === 'melee') startAtb('right');
+            }, Math.floor(rightSpeed / 2));
+        }
     } else {
         stopAtb('left');
         stopAtb('right');
@@ -85,8 +91,9 @@ function startAtb(side) {
         const isUnarmed = !_hands[side];
         if (_combatState !== 'melee') return;
         if (!isUnarmed && !_wielding[side]) return;
-        // Fire attack — send item id, or 'unarmed' if empty hand
-        window.sendText('attack ' + (_hands[side] || 'unarmed'));
+        // Fire attack — send item id, or 'unarmed-left'/'unarmed-right' if empty hand
+        const attackArg = _hands[side] || `unarmed-${side}`;
+        window.sendText('attack ' + attackArg);
         el.classList.remove('atb-filling');
         el.classList.add('atb-ready');
         setTimeout(() => {
