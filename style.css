@@ -438,11 +438,14 @@ html, body {
 /* ══════════════════════════════════════
    FLAVORED LOG STYLES
 ══════════════════════════════════════ */
-.ll-action  { color: #c0aaff; }
-.ll-hit     { color: #ff5555; font-weight: bold; }
-.ll-miss    { color: #ccaa00; font-style: italic; }
-.ll-event   { color: #aa88ff; letter-spacing: 0.3px; }
-.ll-ambient { color: #3d3555; font-style: italic; font-size: 11px; }
+.ll-action    { color: #c0aaff; }
+.ll-hit-left  { color: #ff7777; font-style: italic; }
+.ll-hit-right { color: #ff7777; font-weight: bold; }
+.ll-hit-enemy { color: #cc2222; font-weight: bold; text-shadow: 0 0 6px rgba(180,0,0,0.35); }
+.ll-hit       { color: #ff7777; } /* fallback — legacy */
+.ll-miss      { color: #ccaa00; font-style: italic; }
+.ll-event     { color: #aa88ff; letter-spacing: 0.3px; }
+.ll-ambient   { color: #3d3555; font-style: italic; font-size: 11px; }
 .ll-sep {
   height: 1px;
   background: linear-gradient(to right, transparent, rgba(150,120,255,0.2), transparent);

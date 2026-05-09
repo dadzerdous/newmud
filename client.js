@@ -112,12 +112,15 @@ function route(pkt) {
       break;
 
     case 'system': {
-      const cls = pkt.msgType === 'hit'    ? 'll-hit'
-                : pkt.msgType === 'miss'   ? 'll-miss'
-                : pkt.msgType === 'event'  ? 'll-event'
-                : pkt.msgType === 'action' ? 'll-action'
+      const cls = pkt.msgType === 'hit-left'  ? 'll-hit-left'
+                : pkt.msgType === 'hit-right'  ? 'll-hit-right'
+                : pkt.msgType === 'hit-enemy'  ? 'll-hit-enemy'
+                : pkt.msgType === 'hit'        ? 'll-hit'      // legacy fallback
+                : pkt.msgType === 'miss'        ? 'll-miss'
+                : pkt.msgType === 'event'       ? 'll-event'
+                : pkt.msgType === 'action'      ? 'll-action'
                 : 'll-sys';
-      if (pkt.msgType === 'hit' || pkt.msgType === 'miss') {
+      if (['hit-left','hit-right','hit-enemy','hit','miss'].includes(pkt.msgType)) {
         const el = document.getElementById('log');
         if (el) { const hr = document.createElement('div'); hr.className = 'll-sep'; el.appendChild(hr); }
       }
