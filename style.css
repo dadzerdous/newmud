@@ -336,7 +336,15 @@ html, body {
   border-color: var(--gold);
   box-shadow: 0 0 10px rgba(238,187,85,0.6), 0 0 20px rgba(238,187,85,0.2);
 }
-/* wield-btn removed — engage lives in goblin ctx */
+.wield-btn {
+  background: var(--surf2); border: 1px solid rgba(154,122,255,0.4);
+  border-radius: 14px; color: var(--accent2);
+  font-family: Georgia, serif; font-size: 11px;
+  padding: 5px 10px; cursor: pointer; white-space: nowrap;
+}
+.wield-btn:active { background: var(--accent); color: #000; }
+.wield-btn.flee { border-color: rgba(255,96,96,0.5); color: var(--danger); }
+.wield-btn.hidden { display: none; }
 
 /* ══════════════════════════════════════
    AUTH MODAL
@@ -428,97 +436,15 @@ html, body {
    }
 
 /* ══════════════════════════════════════
-   COMBAT — ATB + skill buttons
+   FLAVORED LOG STYLES
 ══════════════════════════════════════ */
-
-/* ATB fill animation — hand pill fills from bottom */
-@keyframes atbFill {
-  from {
-    background: linear-gradient(to top,
-      rgba(154,122,255,0.15) 0%,
-      transparent 0%);
-  }
-  to {
-    background: linear-gradient(to top,
-      rgba(154,122,255,0.5) 100%,
-      transparent 100%);
-  }
-}
-
-@keyframes atbPulse {
-  0%, 100% { box-shadow: 0 0 8px rgba(154,122,255,0.8), 0 0 20px rgba(154,122,255,0.4); }
-  50%       { box-shadow: 0 0 14px rgba(154,122,255,1),   0 0 30px rgba(154,122,255,0.6); }
-}
-
-.hand.atb-filling {
-  animation: atbFill var(--atb-duration, 2500ms) linear forwards;
-  border-color: rgba(154,122,255,0.5);
-}
-
-.hand.atb-ready {
-  border-color: var(--accent);
-  animation: atbPulse 0.6s ease-in-out infinite;
-  cursor: pointer;
-}
-
-/* Skill buttons */
-.skill-btn {
-  background: var(--surf2); border: 1px solid rgba(154,122,255,0.3);
-  border-radius: 12px; color: var(--accent2);
-  font-size: 16px; padding: 5px 8px;
-  cursor: pointer; flex-shrink: 0;
-  transition: opacity 0.2s;
-}
-.skill-btn.dim {
-  opacity: 0.3;
-  cursor: default;
-}
-.skill-btn:not(.dim):active { background: var(--accent); color: #000; }
-
-/* Locked bag */
-.bot-btn.locked {
-  opacity: 0.35;
-  cursor: default;
-}
-
-/* HP stats show during combat */
-#stat-hp, #stat-npc-hp {
-  color: #ff7070;
-  border-color: rgba(255,96,96,0.3);
-}
-#stat-npc-hp { color: #888; }
-
-/* ══════════════════════════════════════
-   COMBAT LOG STYLES
-══════════════════════════════════════ */
-.ll-hit {
-  color: #ff5555;
-  font-weight: bold;
-}
-.ll-miss {
-  color: #ccaa00;
-  font-style: italic;
-}
-.ll-event {
-  color: #aa88ff;
-  letter-spacing: 0.3px;
-}
-
-/* Log separator line between events */
+.ll-action  { color: #c0aaff; }
+.ll-hit     { color: #ff5555; font-weight: bold; }
+.ll-miss    { color: #ccaa00; font-style: italic; }
+.ll-event   { color: #aa88ff; letter-spacing: 0.3px; }
+.ll-ambient { color: #3d3555; font-style: italic; font-size: 11px; }
 .ll-sep {
   height: 1px;
-  background: linear-gradient(to right, transparent, rgba(150,120,255,0.25), transparent);
-  margin: 4px 0;
-  border: none;
-}
-.ll-ambient {
-  color: #3d3555;
-  font-style: italic;
-  font-size: 11px;
-}
-
-/* ── ROOM ACTION LOG ENTRIES ── */
-.ll-action {
-  color: var(--accent2);
-  font-style: normal;
+  background: linear-gradient(to right, transparent, rgba(150,120,255,0.2), transparent);
+  margin: 3px 0;
 }

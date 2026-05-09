@@ -117,7 +117,10 @@ function route(pkt) {
                 : pkt.msgType === 'event'  ? 'll-event'
                 : pkt.msgType === 'action' ? 'll-action'
                 : 'll-sys';
-      if (pkt.msgType === 'hit' || pkt.msgType === 'miss') logSep();
+      if (pkt.msgType === 'hit' || pkt.msgType === 'miss') {
+        const el = document.getElementById('log');
+        if (el) { const hr = document.createElement('div'); hr.className = 'll-sep'; el.appendChild(hr); }
+      }
       log(pkt.msg, cls);
       break;
     }
