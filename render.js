@@ -99,8 +99,6 @@ function renderDesc(data, objects) {
       // Nothing in desc matches — append as tappable word (no naked unlabelled text)
       html += ` <span class="${cls}" data-id="${id}" onclick="window.__tap(this)">${label}</span>`;
     }
-
-    }
   });
 
   el.innerHTML = html;
