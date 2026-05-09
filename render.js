@@ -275,15 +275,18 @@ export function log(msg, cls) {
   if (!el) return;
   const d = document.createElement('div');
   d.className = 'll ' + (cls ?? 'll-sys');
-  // Wrap any known player names in clickable spans
+  // Only wrap player names if msg doesn't already contain HTML spans
+  // (avoids double-wrapping when renderRoom passes pre-built HTML)
   let html = msg;
-  _playersInRoom.forEach(name => {
-    if (!name) return;
-    const re = new RegExp(`\\b(${name})\\b`, 'g');
-    html = html.replace(re,
-      `<span class="player-name" data-name="${name}" style="color:var(--accent2);cursor:pointer;border-bottom:1px dotted rgba(192,170,255,0.4);">$1</span>`
-    );
-  });
+  if (!msg.includes('<span') && _playersInRoom.size) {
+    _playersInRoom.forEach(name => {
+      if (!name) return;
+      const re = new RegExp(`\\b(${name})\\b`, 'g');
+      html = html.replace(re,
+        `<span class="player-name" data-name="${name}" style="color:var(--accent2);cursor:pointer;border-bottom:1px dotted rgba(192,170,255,0.4);">$1</span>`
+      );
+    });
+  }
   d.innerHTML = html;
   el.appendChild(d);
   el.scrollTop = el.scrollHeight;
