@@ -487,3 +487,27 @@ html, body {
   border-color: rgba(255,96,96,0.3);
 }
 #stat-npc-hp { color: #888; }
+
+/* ══════════════════════════════════════
+   COMBAT LOG STYLES
+══════════════════════════════════════ */
+.ll-hit {
+  color: #ff5555;
+  font-weight: bold;
+}
+.ll-miss {
+  color: #ccaa00;
+  font-style: italic;
+}
+.ll-event {
+  color: #aa88ff;
+  letter-spacing: 0.3px;
+}
+
+/* Log separator line between events */
+.ll-sep {
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(150,120,255,0.25), transparent);
+  margin: 4px 0;
+  border: none;
+}

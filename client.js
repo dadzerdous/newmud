@@ -61,6 +61,14 @@ export function sendText(t) { ws?.readyState === 1 && ws.send(t); }
 
 window.sendText = sendText;
 
+function logSep() {
+  const el = document.getElementById('log');
+  if (!el) return;
+  const hr = document.createElement('div');
+  hr.className = 'll-sep';
+  el.appendChild(hr);
+}
+
 // ── ROUTE ─────────────────────────────────────────────────
 function route(pkt) {
   switch (pkt.type) {
@@ -99,7 +107,6 @@ function route(pkt) {
       window._room = pkt;
       if (pkt.totalDiscoverable) setTotalDiscoverable(pkt.totalDiscoverable);
       renderRoom(pkt, selfName);
-      updateCombatState(!!(pkt.combatants?.length));
       break;
 
     case 'wielding':
@@ -109,11 +116,19 @@ function route(pkt) {
 
     case 'combat':
       handleCombatPacket(pkt);
+      document.getElementById('stat-npc-hp')?.classList.toggle('hidden', !pkt.stage);
       break;
 
-    case 'system':
-      log(pkt.msg, 'll-sys');
+    case 'system': {
+      const cls = pkt.msgType === 'hit'   ? 'll-hit'
+                : pkt.msgType === 'miss'  ? 'll-miss'
+                : pkt.msgType === 'event' ? 'll-event'
+                : 'll-sys';
+      // Add separator before combat events
+      if (pkt.msgType) logSep();
+      log(pkt.msg, cls);
       break;
+    }
 
     case 'inventory':
       // Update worldItems with server's item data
