@@ -50,11 +50,6 @@ export function renderRoom(data, selfName) {
   // Movement
   setZones(data.exits || []);
 
-  // Ambient texts — random atmospheric messages
-  if (isNewRoom && data.ambientTexts?.length) {
-    startAmbient(data.ambientTexts, data.ambientInterval ?? 15000);
-  }
-
   // Players — only announce on fresh room entry, not on same-room refreshes
   if (isNewRoom) {
     const others = (data.players || []).filter(n => n !== selfName);
@@ -207,7 +202,12 @@ function openCtx(id) {
 
   actions.forEach(action => {
     const b = makeActionBtn(action, () => {
-      window.sendText(action + ' ' + (obj?.name ?? id).toLowerCase());
+      if (action === 'engage') {
+        window.sendText('engage ' + id);
+      } else {
+        window.sendText(action + ' ' + (obj?.name ?? id).toLowerCase());
+      }
+      closeCtx();
     });
     btns.appendChild(b);
   });
@@ -288,15 +288,19 @@ export function log(msg, cls) {
   if (!el) return;
   const d = document.createElement('div');
   d.className = 'll ' + (cls ?? 'll-sys');
-  // Wrap any known player names in clickable spans
+  // Only wrap player names in plain text messages (not HTML)
   let html = msg;
-  _playersInRoom.forEach(name => {
-    if (!name) return;
-    const re = new RegExp(`\\b(${name})\\b`, 'g');
-    html = html.replace(re,
-      `<span class="player-name" data-name="${name}" style="color:var(--accent2);cursor:pointer;border-bottom:1px dotted rgba(192,170,255,0.4);">$1</span>`
-    );
-  });
+  const isHtml = /<[a-z][\s\S]*>/i.test(msg);
+  if (!isHtml && _playersInRoom.size > 0) {
+    _playersInRoom.forEach(name => {
+      if (!name || name.length < 2) return;
+      const safe = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const re   = new RegExp(`\\b(${safe})\\b`, 'g');
+      html = html.replace(re,
+        `<span class="player-name" data-name="${name}" style="color:var(--accent2);cursor:pointer;border-bottom:1px dotted rgba(192,170,255,0.4);">$1</span>`
+      );
+    });
+  }
   d.innerHTML = html;
   el.appendChild(d);
   el.scrollTop = el.scrollHeight;
@@ -306,7 +310,6 @@ export function log(msg, cls) {
 export function clearRoom() {
   _objects   = {};
   _activeCtx = null;
-  stopAmbient();
 
   document.getElementById('room-title').textContent = '';
   document.getElementById('room-desc').innerHTML    = '';
@@ -324,11 +327,14 @@ function setZones(exits) {
 // ── DISCOVERY COUNTER ────────────────────────────────────
 function updateDiscoveryCounter() {
   const found = Object.values(_objects).filter(o => o.discovered && o.native !== false).length;
-  const label = document.getElementById('discovered-label');
+  const label   = document.getElementById('discovered-label');
+  const section = document.getElementById('discovered');
   if (label) {
-    label.textContent = _totalDiscoverable > 0
-      ? `Discovered  ${found}/${_totalDiscoverable}`
-      : `Discovered`;
+    label.textContent = `Discovered  ${found}/${_totalDiscoverable}`;
+  }
+  // Always show the discovered section (even 0/N)
+  if (section && _totalDiscoverable > 0) {
+    section.classList.remove('hidden');
   }
 }
 
@@ -405,32 +411,6 @@ document.getElementById('log').addEventListener('click', e => {
 
   document.getElementById('ctx').classList.remove('hidden');
 });
-
-// ── AMBIENT TEXTS ────────────────────────────────────────
-let _ambientTimer = null;
-
-function startAmbient(texts, interval) {
-  if (_ambientTimer) clearTimeout(_ambientTimer);
-
-  function showNext() {
-    const msg = texts[Math.floor(Math.random() * texts.length)];
-    const el  = document.getElementById('log');
-    if (el) {
-      const d = document.createElement('div');
-      d.className = 'll ll-ambient';
-      d.textContent = msg;
-      el.appendChild(d);
-      el.scrollTop = el.scrollHeight;
-    }
-    _ambientTimer = setTimeout(showNext, interval + Math.random() * interval * 0.5);
-  }
-
-  _ambientTimer = setTimeout(showNext, interval);
-}
-
-function stopAmbient() {
-  if (_ambientTimer) { clearTimeout(_ambientTimer); _ambientTimer = null; }
-}
 
 // ── UTIL ─────────────────────────────────────────────────
 function esc(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }

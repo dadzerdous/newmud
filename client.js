@@ -61,14 +61,6 @@ export function sendText(t) { ws?.readyState === 1 && ws.send(t); }
 
 window.sendText = sendText;
 
-function logSep() {
-  const el = document.getElementById('log');
-  if (!el) return;
-  const hr = document.createElement('div');
-  hr.className = 'll-sep';
-  el.appendChild(hr);
-}
-
 // ── ROUTE ─────────────────────────────────────────────────
 function route(pkt) {
   switch (pkt.type) {
@@ -120,12 +112,12 @@ function route(pkt) {
       break;
 
     case 'system': {
-      const cls = pkt.msgType === 'hit'   ? 'll-hit'
-                : pkt.msgType === 'miss'  ? 'll-miss'
-                : pkt.msgType === 'event' ? 'll-event'
+      const cls = pkt.msgType === 'hit'    ? 'll-hit'
+                : pkt.msgType === 'miss'   ? 'll-miss'
+                : pkt.msgType === 'event'  ? 'll-event'
+                : pkt.msgType === 'action' ? 'll-action'
                 : 'll-sys';
-      // Add separator before combat events
-      if (pkt.msgType) logSep();
+      if (pkt.msgType === 'hit' || pkt.msgType === 'miss') logSep();
       log(pkt.msg, cls);
       break;
     }

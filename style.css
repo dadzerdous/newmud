@@ -516,3 +516,9 @@ html, body {
   font-style: italic;
   font-size: 11px;
 }
+
+/* ── ROOM ACTION LOG ENTRIES ── */
+.ll-action {
+  color: var(--accent2);
+  font-style: normal;
+}
