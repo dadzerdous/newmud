@@ -51,6 +51,7 @@ document.addEventListener('keydown', e => {
 
 // ── BOTTOM BAR ────────────────────────────────────────────
 document.getElementById('btn-bag').addEventListener('click', () => sendText('inv'));
+document.getElementById('btn-retreat').addEventListener('click', () => sendText('retreat'));
 document.getElementById('btn-quit').addEventListener('click', () => {
   localStorage.removeItem('mg_token');
   sendText('quit');
