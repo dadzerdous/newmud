@@ -47,6 +47,9 @@ export function renderRoom(data, selfName) {
   _totalDiscoverable = data.totalDiscoverable ?? 0;
   updateDiscoveryCounter();
 
+  // Discovery counter — always show
+  updateDiscoveryCounter();
+
   // Movement
   setZones(data.exits || []);
 
@@ -202,12 +205,7 @@ function openCtx(id) {
 
   actions.forEach(action => {
     const b = makeActionBtn(action, () => {
-      if (action === 'engage') {
-        window.sendText('engage ' + id);
-      } else {
-        window.sendText(action + ' ' + (obj?.name ?? id).toLowerCase());
-      }
-      closeCtx();
+      window.sendText(action + ' ' + (obj?.name ?? id).toLowerCase());
     });
     btns.appendChild(b);
   });
@@ -288,19 +286,15 @@ export function log(msg, cls) {
   if (!el) return;
   const d = document.createElement('div');
   d.className = 'll ' + (cls ?? 'll-sys');
-  // Only wrap player names in plain text messages (not HTML)
+  // Wrap any known player names in clickable spans
   let html = msg;
-  const isHtml = /<[a-z][\s\S]*>/i.test(msg);
-  if (!isHtml && _playersInRoom.size > 0) {
-    _playersInRoom.forEach(name => {
-      if (!name || name.length < 2) return;
-      const safe = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const re   = new RegExp(`\\b(${safe})\\b`, 'g');
-      html = html.replace(re,
-        `<span class="player-name" data-name="${name}" style="color:var(--accent2);cursor:pointer;border-bottom:1px dotted rgba(192,170,255,0.4);">$1</span>`
-      );
-    });
-  }
+  _playersInRoom.forEach(name => {
+    if (!name) return;
+    const re = new RegExp(`\\b(${name})\\b`, 'g');
+    html = html.replace(re,
+      `<span class="player-name" data-name="${name}" style="color:var(--accent2);cursor:pointer;border-bottom:1px dotted rgba(192,170,255,0.4);">$1</span>`
+    );
+  });
   d.innerHTML = html;
   el.appendChild(d);
   el.scrollTop = el.scrollHeight;
@@ -326,15 +320,12 @@ function setZones(exits) {
 
 // ── DISCOVERY COUNTER ────────────────────────────────────
 function updateDiscoveryCounter() {
-  const found = Object.values(_objects).filter(o => o.discovered && o.native !== false).length;
+  const found   = Object.values(_objects).filter(o => o.discovered && o.native !== false && !o.hidden).length;
   const label   = document.getElementById('discovered-label');
   const section = document.getElementById('discovered');
-  if (label) {
+  if (label && _totalDiscoverable > 0) {
     label.textContent = `Discovered  ${found}/${_totalDiscoverable}`;
-  }
-  // Always show the discovered section (even 0/N)
-  if (section && _totalDiscoverable > 0) {
-    section.classList.remove('hidden');
+    section?.classList.remove('hidden');
   }
 }
 

@@ -27,8 +27,6 @@
       <span class="stat" id="stat-level">Lv 1</span>
       <span class="stat" id="stat-energy">⚡100</span>
       <span class="stat" id="stat-stamina">💪100</span>
-      <span class="stat" id="stat-hp">❤️100</span>
-      <span class="stat hidden" id="stat-npc-hp"></span>
     </div>
   </div>
 
@@ -42,7 +40,10 @@
 
       <div id="room">
         <div id="room-top">
-          <div id="room-title"></div>
+          <div id="room-title-wrap" style="display:flex;align-items:center;gap:8px;">
+            <div id="room-title"></div>
+            <span id="reset-btn" style="display:none;cursor:pointer;font-size:14px;">⏳</span>
+          </div>
           <div id="room-desc"></div>
           <div id="discovered" class="hidden">
             <div class="sec-label" id="discovered-label">Discovered</div>
@@ -77,19 +78,12 @@
 
   </div>
 
-    <div id="botbar">
-    <button class="bot-btn" id="btn-bag">🎒</button>
-    <button class="skill-btn hidden dim" id="skill-l" data-side="left">·</button>
-    <div id="hands-center">
-      <div id="hand-l-wrap">
-        <div class="hand" id="hand-l">✋</div>
-      </div>
-      <div id="hand-r-wrap">
-        <div class="hand" id="hand-r">🤚</div>
-      </div>
+  <div id="botbar">
+    <div id="botbar-left">
+      <button class="bot-btn" id="btn-bag">🎒</button>
+      <div class="hand" id="hand-l">✋</div>
+      <div class="hand" id="hand-r">🤚</div>
     </div>
-    <button class="skill-btn hidden dim" id="skill-r" data-side="right">·</button>
-    <button class="bot-btn danger hidden" id="btn-retreat">retreat</button>
     <button class="bot-btn danger" id="btn-quit">quit</button>
   </div>
 
