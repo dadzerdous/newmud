@@ -511,3 +511,8 @@ html, body {
   margin: 4px 0;
   border: none;
 }
+.ll-ambient {
+  color: #3d3555;
+  font-style: italic;
+  font-size: 11px;
+}

@@ -50,6 +50,11 @@ export function renderRoom(data, selfName) {
   // Movement
   setZones(data.exits || []);
 
+  // Ambient texts — random atmospheric messages
+  if (isNewRoom && data.ambientTexts?.length) {
+    startAmbient(data.ambientTexts, data.ambientInterval ?? 15000);
+  }
+
   // Players — only announce on fresh room entry, not on same-room refreshes
   if (isNewRoom) {
     const others = (data.players || []).filter(n => n !== selfName);
@@ -98,6 +103,8 @@ function renderDesc(data, objects) {
     } else {
       // Nothing in desc matches — append as tappable word (no naked unlabelled text)
       html += ` <span class="${cls}" data-id="${id}" onclick="window.__tap(this)">${label}</span>`;
+    }
+
     }
   });
 
@@ -200,11 +207,7 @@ function openCtx(id) {
 
   actions.forEach(action => {
     const b = makeActionBtn(action, () => {
-      if (action === 'engage') {
-        window.sendText('engage ' + id);
-      } else {
-        window.sendText(action + ' ' + (obj?.name ?? id).toLowerCase());
-      }
+      window.sendText(action + ' ' + (obj?.name ?? id).toLowerCase());
     });
     btns.appendChild(b);
   });
@@ -213,7 +216,7 @@ function openCtx(id) {
 }
 
 // ── HAND CONTEXT ─────────────────────────────────────────
-export function openHandCtx(itemId, otherHandItem, hand) {
+export function openHandCtx(itemId, otherHandItem) {
   if (!itemId) return;
 
   const def  = window.worldItems?.[itemId];
@@ -232,18 +235,11 @@ export function openHandCtx(itemId, otherHandItem, hand) {
   // Get hand actions from item def, or fallback defaults
   let handActions = def?.actions?.hand || ['look', 'use', 'throw', 'store', 'drop'];
 
-  // If wielded — lock to look + unwield only
-  const handEl    = document.getElementById(hand === 'left' ? 'hand-l' : 'hand-r');
-  const isWielded = handEl?.classList.contains('wielding');
-
-  if (isWielded) {
-    handActions = ['look', 'unwield'];
-  } else if (otherHandItem) {
-    // Inject combine, keep named actions
-    const KEEP = new Set(['look', 'throw', 'store', 'drop']);
-    handActions = handActions.map(a => a === 'use' ? 'combine' : a).filter(a => a !== 'combine');
-    const lookIdx = handActions.indexOf('look');
-    handActions.splice(lookIdx + 1, 0, 'combine');
+  // Replace use/chop/etc with combine if other hand has an item
+  if (otherHandItem) {
+    handActions = handActions.map(a =>
+      (a !== 'look' && a !== 'throw' && a !== 'store' && a !== 'drop') ? 'combine' : a
+    );
   }
 
   handActions.forEach(action => {
@@ -252,11 +248,8 @@ export function openHandCtx(itemId, otherHandItem, hand) {
         window.sendText('throw ' + sendId);
       } else if (action === 'combine') {
         window.sendText('use ' + sendId);
-      } else if (action === 'wield') {
-        window.sendText('wield ' + sendId);
-      } else if (action === 'unwield') {
-        window.sendText('unwield ' + sendId);
       } else if (action !== 'look' && action !== 'store' && action !== 'drop') {
+        // Custom action label (chop, use, etc) — send as use
         window.sendText('use ' + sendId);
       } else {
         window.sendText(action + ' ' + sendId);
@@ -313,6 +306,7 @@ export function log(msg, cls) {
 export function clearRoom() {
   _objects   = {};
   _activeCtx = null;
+  stopAmbient();
 
   document.getElementById('room-title').textContent = '';
   document.getElementById('room-desc').innerHTML    = '';
@@ -411,6 +405,32 @@ document.getElementById('log').addEventListener('click', e => {
 
   document.getElementById('ctx').classList.remove('hidden');
 });
+
+// ── AMBIENT TEXTS ────────────────────────────────────────
+let _ambientTimer = null;
+
+function startAmbient(texts, interval) {
+  if (_ambientTimer) clearTimeout(_ambientTimer);
+
+  function showNext() {
+    const msg = texts[Math.floor(Math.random() * texts.length)];
+    const el  = document.getElementById('log');
+    if (el) {
+      const d = document.createElement('div');
+      d.className = 'll ll-ambient';
+      d.textContent = msg;
+      el.appendChild(d);
+      el.scrollTop = el.scrollHeight;
+    }
+    _ambientTimer = setTimeout(showNext, interval + Math.random() * interval * 0.5);
+  }
+
+  _ambientTimer = setTimeout(showNext, interval);
+}
+
+function stopAmbient() {
+  if (_ambientTimer) { clearTimeout(_ambientTimer); _ambientTimer = null; }
+}
 
 // ── UTIL ─────────────────────────────────────────────────
 function esc(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
