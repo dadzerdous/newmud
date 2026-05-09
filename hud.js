@@ -56,13 +56,19 @@ export function handleCombatPacket(pkt) {
     if (_combatState === 'melee') {
         const leftShouldFire  = _wielding.left  || !_hands.left;
         const rightShouldFire = _wielding.right || !_hands.right;
-        if (leftShouldFire)  startAtb('left');
-        if (rightShouldFire) {
+
+        // Only start ATB if not already running for that side
+        if (leftShouldFire && !_atbTimers.left)  startAtb('left');
+        if (rightShouldFire && !_atbTimers.right) {
             // Stagger right hand by half its ATB speed so hands don't fire together
             const rightSpeed = getAtbSpeed(_hands.right);
-            setTimeout(() => {
-                if (_combatState === 'melee') startAtb('right');
-            }, Math.floor(rightSpeed / 2));
+            const staggerKey = '_atbStagger';
+            if (!_atbTimers[staggerKey]) {
+                _atbTimers[staggerKey] = setTimeout(() => {
+                    _atbTimers[staggerKey] = null;
+                    if (_combatState === 'melee' && !_atbTimers.right) startAtb('right');
+                }, Math.floor(rightSpeed / 2));
+            }
         }
     } else {
         stopAtb('left');
@@ -106,6 +112,11 @@ function startAtb(side) {
 
 function stopAtb(side) {
     if (_atbTimers[side]) { clearTimeout(_atbTimers[side]); _atbTimers[side] = null; }
+    // Also clear stagger timer when stopping right
+    if (side === 'right' && _atbTimers['_atbStagger']) {
+        clearTimeout(_atbTimers['_atbStagger']);
+        _atbTimers['_atbStagger'] = null;
+    }
     const el = document.getElementById(`hand-${side[0]}`);
     if (el) el.classList.remove('atb-filling', 'atb-ready');
 }
