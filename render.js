@@ -47,9 +47,6 @@ export function renderRoom(data, selfName) {
   _totalDiscoverable = data.totalDiscoverable ?? 0;
   updateDiscoveryCounter();
 
-  // Discovery counter — always show
-  updateDiscoveryCounter();
-
   // Movement
   setZones(data.exits || []);
 
@@ -323,9 +320,9 @@ function updateDiscoveryCounter() {
   const found   = Object.values(_objects).filter(o => o.discovered && o.native !== false && !o.hidden).length;
   const label   = document.getElementById('discovered-label');
   const section = document.getElementById('discovered');
-  if (label && _totalDiscoverable > 0) {
-    label.textContent = `Discovered  ${found}/${_totalDiscoverable}`;
-    section?.classList.remove('hidden');
+  if (_totalDiscoverable > 0) {
+    if (label)   label.textContent = `Discovered  ${found}/${_totalDiscoverable}`;
+    if (section) section.classList.remove('hidden');
   }
 }
 
