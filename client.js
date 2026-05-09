@@ -3,7 +3,7 @@
 // ════════════════════════════════════════
 
 import { renderRoom, log, clearRoom, restoreDiscovered, setTotalDiscoverable, showInventory, startTargeting } from './render.js';
-import { updateHUD, setHeld, setHands, updateCombatState, handleCombatPacket } from './hud.js';
+import { updateHUD, setHeld, setHands, updateCombatState, handleCombatPacket, resetCombatState } from './hud.js';
 import { hideAuth, applyTheme, bindAuth } from './auth.js';
 import { MockSocket }                     from './mock.js';
 
@@ -99,6 +99,11 @@ function route(pkt) {
       window._room = pkt;
       if (pkt.totalDiscoverable) setTotalDiscoverable(pkt.totalDiscoverable);
       renderRoom(pkt, selfName);
+      // If server sends a room with no active combat, reset the combat UI
+      // (handles moving rooms during notice, or after death respawn)
+      if (!pkt.combatStage || pkt.combatStage === 'idle' || pkt.combatStage === 'notice') {
+          resetCombatState();
+      }
       break;
 
     case 'wielding':

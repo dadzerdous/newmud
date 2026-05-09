@@ -147,7 +147,8 @@ function renderHands() {
 
 // ── RENDER BOTBAR ─────────────────────────────────────────
 function renderBotbar() {
-    const inCombat = _combatState !== 'idle';
+    // notice = narrative only, not a combat lock — show normal botbar
+    const inCombat = _combatState === 'ranged' || _combatState === 'melee';
     const bagBtn    = document.getElementById('btn-bag');
     const quitBtn   = document.getElementById('btn-quit');
     const retreatBtn= document.getElementById('btn-retreat');
@@ -198,4 +199,13 @@ function renderBotbar() {
 function setText(id, val) {
     const el = document.getElementById(id);
     if (el) el.textContent = val;
+}
+
+// Called from client.js when a room packet arrives — clears combat UI
+// if server didn't explicitly send a combat reset packet
+export function resetCombatState() {
+    _combatState = 'idle';
+    stopAtb('left');
+    stopAtb('right');
+    renderBotbar();
 }
