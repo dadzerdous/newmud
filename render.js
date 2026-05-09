@@ -142,7 +142,6 @@ function rebuildChips(currentIds) {
 
   const discovered = Object.values(_objects).filter(o => o.discovered && o.native !== false && !o.hidden);
 
-  // Always show section if room has discoverable things — counter handles visibility
   discovered.forEach(obj => {
     const id   = obj.id ?? obj.name;
     const chip = makeChip(id, obj, currentIds.has(id));
