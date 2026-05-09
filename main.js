@@ -60,38 +60,27 @@ document.getElementById('hand-l').addEventListener('click', () => {
   const el    = document.getElementById('hand-l');
   const held  = el.dataset.held;
   const other = document.getElementById('hand-r').dataset.held;
-  if (held) openHandCtx(held, other || null, 'left');
+  if (held) openHandCtx(held, other || null);
   else sendText('hands');
 });
 document.getElementById('hand-r').addEventListener('click', () => {
   const el    = document.getElementById('hand-r');
   const held  = el.dataset.held;
   const other = document.getElementById('hand-l').dataset.held;
-  if (held) openHandCtx(held, other || null, 'right');
+  if (held) openHandCtx(held, other || null);
   else sendText('hands');
 });
 
-// ── RETREAT ──────────────────────────────────────────────
-document.getElementById('btn-retreat')?.addEventListener('click', () => {
-  sendText('retreat');
+// ── WIELD BUTTONS ─────────────────────────────────────────
+document.getElementById('wield-l')?.addEventListener('click', () => {
+  const btn = document.getElementById('wield-l');
+  if (btn.textContent === 'flee') sendText('flee');
+  else toggleWield('left');
 });
-
-// ── SKILL BUTTONS ────────────────────────────────────────
-document.getElementById('skill-l')?.addEventListener('click', () => {
-  const btn   = document.getElementById('skill-l');
-  const skill = btn.dataset.skill;
-  const item  = btn.dataset.item;
-  if (skill && item && !btn.classList.contains('dim')) {
-    sendText(`skill ${skill} ${item}`);
-  }
-});
-document.getElementById('skill-r')?.addEventListener('click', () => {
-  const btn   = document.getElementById('skill-r');
-  const skill = btn.dataset.skill;
-  const item  = btn.dataset.item;
-  if (skill && item && !btn.classList.contains('dim')) {
-    sendText(`skill ${skill} ${item}`);
-  }
+document.getElementById('wield-r')?.addEventListener('click', () => {
+  const btn = document.getElementById('wield-r');
+  if (btn.textContent === 'flee') sendText('flee');
+  else toggleWield('right');
 });
 
 // ── ROOM TITLE → RESET VOTE ───────────────────────────────
@@ -100,7 +89,13 @@ let _resetVotePending = false;
 document.getElementById('room-title')?.addEventListener('click', () => {
   const btn = document.getElementById('reset-btn');
   if (!btn) return;
-  if (btn.style.display === 'none') btn.style.display = '';
+  // Toggle hourglass on/off
+  if (btn.style.display === 'none') {
+    btn.style.display = '';
+  } else if (!_resetVotePending) {
+    // Only hide if vote not pending — don't hide mid-vote
+    btn.style.display = 'none';
+  }
 });
 
 document.getElementById('reset-btn')?.addEventListener('click', e => {
