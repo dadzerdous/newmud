@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>1MuddyGob</title>
+  <title>MuddyGob</title>
   <link rel="stylesheet" href="style.css">
   <link id="theme-css" rel="stylesheet" href="" onerror="this.removeAttribute('href')">
 </head>
@@ -27,16 +27,17 @@
       <span class="stat" id="stat-level">Lv 1</span>
       <span class="stat" id="stat-energy">⚡100</span>
       <span class="stat" id="stat-stamina">💪100</span>
+      <span class="stat" id="stat-hp">❤️100</span>
     </div>
   </div>
 
   <div id="compass-layout">
 
-    <button class="dir-btn dir-side dim" id="dir-west" data-dir="west">↓ west</button>
+    <button class="dir-btn dim" id="dir-west" data-dir="west">↓ west</button>
 
     <div id="room-mid">
 
-      <button class="dir-btn dir-ns dim" id="dir-north" data-dir="north">↑ north</button>
+      <button class="dir-btn dim" id="dir-north" data-dir="north">↑ north</button>
 
       <div id="room">
         <div id="room-top">
@@ -57,8 +58,7 @@
         <div id="log-divider"></div>
         <div id="log"></div>
 
-        <!-- SOUTH lives here, above input, inside #room column -->
-        <button class="dir-btn dir-ns dim" id="dir-south" data-dir="south">↓ south</button>
+        <button class="dir-btn dim" id="dir-south" data-dir="south">↓ south</button>
 
         <div id="input-bar">
           <select id="chat-mode">
@@ -74,16 +74,23 @@
 
     </div>
 
-    <button class="dir-btn dir-side dim" id="dir-east" data-dir="east">↑ east</button>
+    <button class="dir-btn dim" id="dir-east" data-dir="east">↑ east</button>
 
   </div>
 
   <div id="botbar">
-    <div id="botbar-left">
-      <button class="bot-btn" id="btn-bag">🎒</button>
-      <div class="hand" id="hand-l">✋</div>
-      <div class="hand" id="hand-r">🤚</div>
+    <button class="bot-btn" id="btn-bag">🎒</button>
+    <button class="skill-btn hidden dim" id="skill-l" data-side="left">·</button>
+    <div id="hands-center">
+      <div id="hand-l-wrap">
+        <div class="hand" id="hand-l">✋</div>
+      </div>
+      <div id="hand-r-wrap">
+        <div class="hand" id="hand-r">🤚</div>
+      </div>
     </div>
+    <button class="skill-btn hidden dim" id="skill-r" data-side="right">·</button>
+    <button class="bot-btn danger hidden" id="btn-retreat">retreat</button>
     <button class="bot-btn danger" id="btn-quit">quit</button>
   </div>
 
