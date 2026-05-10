@@ -142,49 +142,84 @@ function renderHands() {
         const def = window.worldItems?.[_hands[side]];
         if (!el) return;
 
-        const itemEmoji  = _hands[side] ? (def?.emoji ?? '❓') : (side === 'left' ? '✋' : '🤚');
-        const skillEmoji = getSkillEmoji(side);
-        const onCooldown = isSkillOnCooldown(side);
-
-        // Build pill content: skill leads for left, trails for right
-        if (skillEmoji) {
-            const skillSpan = `<span style="font-size:13px;opacity:${onCooldown ? '0.25' : '1'}">${skillEmoji}</span>`;
-            el.innerHTML = side === 'left'
-                ? `${skillSpan}${itemEmoji}`
-                : `${itemEmoji}${skillSpan}`;
-        } else {
-            el.textContent = itemEmoji;
-        }
-
+        // Weapon pill — just the item emoji, clean
+        el.textContent  = _hands[side] ? (def?.emoji ?? '❓') : (side === 'left' ? '✋' : '🤚');
         el.dataset.held = _hands[side] ?? '';
         el.dataset.hand = side;
         el.classList.toggle('wielding',   !!_wielding[side]);
         el.classList.toggle('glow-shiny', def?.glowClass === 'shiny');
-        // Gold glow when skill is ready
-        el.classList.toggle('skill-ready', !!skillEmoji && !onCooldown);
+    });
+    renderSkillPills();
+}
+
+// ── RENDER SKILL PILLS ────────────────────────────────────
+function renderSkillPills() {
+    const inCombat = _combatState === 'ranged' || _combatState === 'melee';
+
+    ['left', 'right'].forEach(side => {
+        const btn    = document.getElementById(`skill-${side[0]}`);
+        if (!btn) return;
+
+        const itemId = _hands[side];
+        const def    = itemId ? window.worldItems?.[itemId] : null;
+        const skills = def?.skills ?? [];
+
+        if (!inCombat || !skills.length) {
+            // Out of combat or no skills — hide pill entirely
+            btn.classList.add('hidden');
+            btn.classList.remove('ready', 'charging', 'no-skill');
+            return;
+        }
+
+        // Check if skill is unlocked at current weapon level
+        const xp    = window._weaponXP?.[itemId] ?? 0;
+        const level = weaponLevel(xp);
+        const skill = skills.find(s => level >= (s.minLevel ?? 1));
+
+        if (!skill) {
+            // Has skills but not unlocked yet — show dimmed placeholder
+            btn.classList.remove('hidden', 'ready', 'charging');
+            btn.classList.add('no-skill');
+            btn.textContent = '·';
+            return;
+        }
+
+        // Skill exists — check cooldown
+        const cds     = window._skillCooldowns ?? {};
+        const expires = cds[itemId] ?? 0;
+        const onCD    = Date.now() < expires;
+
+        btn.classList.remove('hidden', 'no-skill');
+        btn.textContent = skill.emoji;
+        btn.dataset.itemId  = itemId;
+        btn.dataset.skillId = skill.id;
+
+        if (onCD) {
+            btn.classList.add('charging');
+            btn.classList.remove('ready');
+        } else {
+            btn.classList.add('ready');
+            btn.classList.remove('charging');
+        }
     });
 }
 
-// Returns the skill emoji for a hand if skill is unlocked, else null
-function getSkillEmoji(side) {
+// Returns skill def for a hand if unlocked, else null
+function getSkillForSide(side) {
     const itemId = _hands[side];
     if (!itemId) return null;
-    const def = window.worldItems?.[itemId];
+    const def    = window.worldItems?.[itemId];
     const skills = def?.skills;
     if (!skills?.length) return null;
-    // Check weapon XP level to see if skill is unlocked
     const xp    = window._weaponXP?.[itemId] ?? 0;
     const level = weaponLevel(xp);
-    const skill = skills.find(s => level >= (s.minLevel ?? 1));
-    return skill?.emoji ?? null;
+    return skills.find(s => level >= (s.minLevel ?? 1)) ?? null;
 }
 
 function isSkillOnCooldown(side) {
     const itemId = _hands[side];
     if (!itemId) return false;
-    const cooldowns = window._skillCooldowns ?? {};
-    const expires   = cooldowns[itemId] ?? 0;
-    return Date.now() < expires;
+    return Date.now() < (window._skillCooldowns?.[itemId] ?? 0);
 }
 
 function weaponLevel(xp) {
@@ -197,7 +232,6 @@ function weaponLevel(xp) {
 
 // ── RENDER BOTBAR ─────────────────────────────────────────
 function renderBotbar() {
-    // notice = narrative only — show normal botbar
     const inCombat  = _combatState === 'ranged' || _combatState === 'melee';
     const bagBtn    = document.getElementById('btn-bag');
     const quitBtn   = document.getElementById('btn-quit');
@@ -214,6 +248,8 @@ function renderBotbar() {
         quitBtn?.classList.remove('hidden');
         retreatBtn?.classList.add('hidden');
     }
+
+    renderSkillPills();
 }
 
 function setText(id, val) {
@@ -234,9 +270,19 @@ export function resetCombatState() {
 export function applySkillCooldown(itemId, durationMs) {
     if (!window._skillCooldowns) window._skillCooldowns = {};
     window._skillCooldowns[itemId] = Date.now() + durationMs;
-    renderHands();
-    // Re-render after cooldown expires
-    setTimeout(() => renderHands(), durationMs + 50);
+
+    // Animate skill pill: charging class triggers dim→undim over cooldown duration
+    ['left','right'].forEach(side => {
+        if (_hands[side] !== itemId) return;
+        const btn = document.getElementById(`skill-${side[0]}`);
+        if (!btn) return;
+        btn.classList.remove('ready');
+        btn.classList.add('charging');
+        btn.style.setProperty('--skill-duration', `${durationMs}ms`);
+    });
+
+    // Re-render when cooldown expires
+    setTimeout(() => renderSkillPills(), durationMs + 50);
 }
 
 // ── WEAPON XP — called from client.js on weapon_xp packet ──

@@ -26,7 +26,7 @@
     <div id="hud-stats">
       <span class="stat" id="stat-level">Lv 1</span>
       <span class="stat" id="stat-energy">⚡100</span>
-      <span class="stat" id="stat-mana">🔮100</span>
+      <span class="stat" id="stat-stamina">💪100</span>
       <span class="stat" id="stat-hp">❤️100</span>
     </div>
   </div>
@@ -80,14 +80,18 @@
 
   <div id="botbar">
     <button class="bot-btn" id="btn-bag">🎒</button>
+
     <div id="hands-center">
-      <div id="hand-l-wrap">
-        <div class="hand" id="hand-l">✋</div>
+      <div class="hand-group" id="group-l">
+        <button class="skill-pill hidden" id="skill-l" data-side="left">·</button>
+        <div class="weapon-pill" id="hand-l" data-held="" data-hand="left">✋</div>
       </div>
-      <div id="hand-r-wrap">
-        <div class="hand" id="hand-r">🤚</div>
+      <div class="hand-group" id="group-r">
+        <div class="weapon-pill" id="hand-r" data-held="" data-hand="right">🤚</div>
+        <button class="skill-pill hidden" id="skill-r" data-side="right">·</button>
       </div>
     </div>
+
     <button class="bot-btn danger hidden" id="btn-retreat">retreat</button>
     <button class="bot-btn danger" id="btn-quit">quit</button>
   </div>

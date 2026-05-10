@@ -178,6 +178,7 @@
       ],
       "hand": [
         "look",
+        "use",
         "throw",
         "store",
         "drop"

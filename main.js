@@ -74,6 +74,20 @@ document.getElementById('hand-r').addEventListener('click', () => {
   else sendText('hands');
 });
 
+// Skill pill clicks — fire skill directly
+document.getElementById('skill-l')?.addEventListener('click', () => {
+  const btn = document.getElementById('skill-l');
+  const itemId  = btn.dataset.itemId;
+  const skillId = btn.dataset.skillId;
+  if (itemId && skillId) sendText(`skill ${itemId} ${skillId}`);
+});
+document.getElementById('skill-r')?.addEventListener('click', () => {
+  const btn = document.getElementById('skill-r');
+  const itemId  = btn.dataset.itemId;
+  const skillId = btn.dataset.skillId;
+  if (itemId && skillId) sendText(`skill ${itemId} ${skillId}`);
+});
+
 // ── WIELD BUTTONS ─────────────────────────────────────────
 document.getElementById('wield-l')?.addEventListener('click', () => {
   const btn = document.getElementById('wield-l');

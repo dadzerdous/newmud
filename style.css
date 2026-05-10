@@ -310,10 +310,10 @@ html, body {
 }
 #hands-center {
   display: flex; align-items: center; justify-content: center;
-  gap: 6px; flex: 1;
+  gap: 10px; flex: 1;
 }
-#hand-l-wrap, #hand-r-wrap {
-  display: flex; align-items: center; gap: 4px;
+.hand-group {
+  display: flex; align-items: center; gap: 5px;
 }
 .bot-btn {
   background: var(--surf2); border: 1px solid var(--border);
@@ -323,32 +323,83 @@ html, body {
 }
 .bot-btn:active { background: var(--border2); }
 .bot-btn.danger { color: var(--danger); border-color: rgba(255,96,96,0.2); }
+
+/* ── WEAPON PILL — auto-attacks, ATB opacity animation ── */
+.weapon-pill {
+  background: var(--surf2); border: 1px solid var(--border);
+  border-radius: 20px; padding: 5px 11px; font-size: 17px;
+  cursor: pointer; user-select: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.weapon-pill:active { border-color: var(--gold); }
+.weapon-pill.wielding {
+  border-color: var(--accent);
+  box-shadow: 0 0 8px rgba(154,122,255,0.4);
+}
+.weapon-pill.glow-shiny {
+  border-color: var(--gold);
+  box-shadow: 0 0 10px rgba(238,187,85,0.6);
+}
+/* ATB charging: dim → undim over attack speed duration */
+.weapon-pill.atb-filling {
+  animation: atbCharge var(--atb-duration, 2500ms) linear forwards;
+}
+/* ATB fired: gold flash */
+.weapon-pill.atb-ready {
+  border-color: var(--gold) !important;
+  box-shadow: 0 0 14px rgba(238,187,85,0.8) !important;
+  animation: atbFlash 0.3s ease-out forwards;
+}
+@keyframes atbCharge {
+  0%   { opacity: 0.25; border-color: rgba(150,120,255,0.08); }
+  85%  { opacity: 0.85; }
+  100% { opacity: 1.0;  border-color: rgba(150,120,255,0.5); }
+}
+@keyframes atbFlash {
+  0%   { opacity: 1; box-shadow: 0 0 18px rgba(238,187,85,1); }
+  100% { opacity: 1; box-shadow: 0 0 4px rgba(238,187,85,0.2); }
+}
+
+/* ── SKILL PILL — player-tapped ── */
+.skill-pill {
+  background: var(--surf2); border: 1px solid rgba(150,120,255,0.15);
+  border-radius: 20px; padding: 5px 10px; font-size: 14px;
+  color: var(--muted); cursor: pointer; user-select: none;
+  font-family: Georgia, serif;
+  transition: border-color 0.15s, box-shadow 0.15s, opacity 0.15s;
+}
+.skill-pill.hidden { display: none !important; }
+/* No skill unlocked yet */
+.skill-pill.no-skill {
+  opacity: 0.3;
+  pointer-events: none;
+}
+/* Skill ready — gold border + soft pulse */
+.skill-pill.ready {
+  border-color: var(--gold);
+  color: var(--gold);
+  box-shadow: 0 0 8px rgba(238,187,85,0.4);
+  animation: skillPulse 2s ease-in-out infinite;
+}
+/* Skill cooldown — same dim animation as ATB charge */
+.skill-pill.charging {
+  animation: atbCharge var(--skill-duration, 8000ms) linear forwards;
+  pointer-events: none;
+}
+@keyframes skillPulse {
+  0%, 100% { box-shadow: 0 0 5px rgba(238,187,85,0.25); }
+  50%       { box-shadow: 0 0 14px rgba(238,187,85,0.6); border-color: #ffdd88; }
+}
+
+/* legacy — keep for any remaining .hand references */
 .hand {
   background: var(--surf2); border: 1px solid var(--border);
   border-radius: 20px; padding: 5px 9px; font-size: 17px; cursor: pointer;
 }
-.hand:active { border-color: var(--gold); }
-.hand.wielding {
-  border-color: var(--accent);
-  box-shadow: 0 0 8px rgba(154,122,255,0.4);
-}
-.hand.glow-shiny {
-  border-color: var(--gold);
-  box-shadow: 0 0 10px rgba(238,187,85,0.6), 0 0 20px rgba(238,187,85,0.2);
-}
-.hand.skill-ready {
-  border-color: var(--gold);
-  box-shadow: 0 0 8px rgba(238,187,85,0.35);
-}
-.wield-btn {
-  background: var(--surf2); border: 1px solid rgba(154,122,255,0.4);
-  border-radius: 14px; color: var(--accent2);
-  font-family: Georgia, serif; font-size: 11px;
-  padding: 5px 10px; cursor: pointer; white-space: nowrap;
-}
-.wield-btn:active { background: var(--accent); color: #000; }
-.wield-btn.flee { border-color: rgba(255,96,96,0.5); color: var(--danger); }
-.wield-btn.hidden { display: none; }
+.hand.wielding { border-color: var(--accent); box-shadow: 0 0 8px rgba(154,122,255,0.4); }
+.hand.glow-shiny { border-color: var(--gold); box-shadow: 0 0 10px rgba(238,187,85,0.6); }
+
+
 
 /* ══════════════════════════════════════
    AUTH MODAL
@@ -442,13 +493,11 @@ html, body {
 /* ══════════════════════════════════════
    FLAVORED LOG STYLES
 ══════════════════════════════════════ */
-.ll-action    { color: #c0aaff; }
-.ll-hit-player { color: #ff7777; }
-.ll-hit-enemy  { color: #cc2222; font-weight: bold; text-shadow: 0 0 6px rgba(180,0,0,0.35); }
-.ll-hit        { color: #ff7777; } /* legacy fallback */
-.ll-miss       { color: #ccaa00; font-style: italic; }
-.ll-event      { color: #aa88ff; letter-spacing: 0.3px; }
-.ll-ambient    { color: #3d3555; font-style: italic; font-size: 11px; }
+.ll-action  { color: #c0aaff; }
+.ll-hit     { color: #ff5555; font-weight: bold; }
+.ll-miss    { color: #ccaa00; font-style: italic; }
+.ll-event   { color: #aa88ff; letter-spacing: 0.3px; }
+.ll-ambient { color: #3d3555; font-style: italic; font-size: 11px; }
 .ll-sep {
   height: 1px;
   background: linear-gradient(to right, transparent, rgba(150,120,255,0.2), transparent);
