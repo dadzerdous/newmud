@@ -178,6 +178,7 @@
       ],
       "hand": [
         "look",
+        "use",
         "throw",
         "store",
         "drop"
@@ -225,6 +226,7 @@
     "id": "branch",
     "name": "Branch",
     "emoji": "🪵",
+    "droppedText": "A branch lies across the path, freshly cut.",
     "actions": {
       "room": [
         "look",
