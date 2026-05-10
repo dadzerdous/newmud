@@ -3,7 +3,7 @@
 // ════════════════════════════════════════
 
 import { renderRoom, log, clearRoom, restoreDiscovered, setTotalDiscoverable, showInventory, startTargeting } from './render.js';
-import { updateHUD, setHeld, setHands, updateCombatState, handleCombatPacket, resetCombatState } from './hud.js';
+import { updateHUD, setHeld, setHands, updateCombatState, handleCombatPacket, resetCombatState, applySkillCooldown, updateWeaponXP } from './hud.js';
 import { hideAuth, applyTheme, bindAuth } from './auth.js';
 import { MockSocket }                     from './mock.js';
 
@@ -74,6 +74,14 @@ function route(pkt) {
       selfName = pkt.player?.name;
       if (pkt.player?.race) applyTheme(pkt.player.race);
       updateHUD(pkt.player);
+      break;
+
+    case 'skill_cooldown':
+      applySkillCooldown(pkt.itemId, pkt.durationMs);
+      break;
+
+    case 'weapon_xp':
+      updateWeaponXP(pkt.weaponXP);
       break;
 
     case 'stats':

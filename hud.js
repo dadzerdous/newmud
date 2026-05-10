@@ -9,7 +9,6 @@ let _combatState = 'idle'; // idle | notice | approach | melee
 let _atbTimers   = { left: null, right: null };
 
 function getAtbSpeed(itemId) {
-    if (!itemId) return 4000; // unarmed — slower than any weapon
     return window.worldItems?.[itemId]?.atbSpeed ?? 2500;
 }
 
@@ -23,7 +22,7 @@ export function updateHUD(data) {
     }
     if (data.level   != null) setText('stat-level',  `Lv ${data.level}`);
     if (data.energy  != null) setText('stat-energy',  `⚡${data.energy}`);
-    if (data.stamina != null) setText('stat-stamina', `💪${data.stamina}`);
+    if (data.mana    != null) setText('stat-mana',    `🔮${data.mana}`);
     if (data.hp      != null) setText('stat-hp',      `❤️${data.hp}`);
 }
 
@@ -52,24 +51,10 @@ export function handleCombatPacket(pkt) {
     renderHands();
     renderBotbar();
 
-    // ATB — runs in melee for wielded weapons AND empty hands (unarmed)
+    // ATB — only runs in melee
     if (_combatState === 'melee') {
-        const leftShouldFire  = _wielding.left  || !_hands.left;
-        const rightShouldFire = _wielding.right || !_hands.right;
-
-        // Only start ATB if not already running for that side
-        if (leftShouldFire && !_atbTimers.left)  startAtb('left');
-        if (rightShouldFire && !_atbTimers.right) {
-            // Stagger right hand by half its ATB speed so hands don't fire together
-            const rightSpeed = getAtbSpeed(_hands.right);
-            const staggerKey = '_atbStagger';
-            if (!_atbTimers[staggerKey]) {
-                _atbTimers[staggerKey] = setTimeout(() => {
-                    _atbTimers[staggerKey] = null;
-                    if (_combatState === 'melee' && !_atbTimers.right) startAtb('right');
-                }, Math.floor(rightSpeed / 2));
-            }
-        }
+        if (_wielding.left  && _hands.left)  startAtb('left');
+        if (_wielding.right && _hands.right) startAtb('right');
     } else {
         stopAtb('left');
         stopAtb('right');
@@ -94,29 +79,20 @@ function startAtb(side) {
     el.style.setProperty('--atb-duration', `${speed}ms`);
 
     _atbTimers[side] = setTimeout(() => {
-        const isUnarmed = !_hands[side];
-        if (_combatState !== 'melee') return;
-        if (!isUnarmed && !_wielding[side]) return;
-        // Fire attack — send item id, or 'unarmed-left'/'unarmed-right' if empty hand
-        const attackArg = _hands[side] || `unarmed-${side}`;
-        window.sendText('attack ' + attackArg);
+        if (_combatState !== 'melee' || !_wielding[side]) return;
+        // Auto-fire
+        window.sendText('attack ' + _hands[side]);
         el.classList.remove('atb-filling');
         el.classList.add('atb-ready');
         setTimeout(() => {
             el.classList.remove('atb-ready');
-            const shouldContinue = _combatState === 'melee' && (_wielding[side] || !_hands[side]);
-            if (shouldContinue) startAtb(side);
+            if (_combatState === 'melee' && _wielding[side]) startAtb(side);
         }, 300);
     }, speed);
 }
 
 function stopAtb(side) {
     if (_atbTimers[side]) { clearTimeout(_atbTimers[side]); _atbTimers[side] = null; }
-    // Also clear stagger timer when stopping right
-    if (side === 'right' && _atbTimers['_atbStagger']) {
-        clearTimeout(_atbTimers['_atbStagger']);
-        _atbTimers['_atbStagger'] = null;
-    }
     const el = document.getElementById(`hand-${side[0]}`);
     if (el) el.classList.remove('atb-filling', 'atb-ready');
 }
@@ -148,62 +124,78 @@ function renderHands() {
         const el  = document.getElementById(`hand-${side[0]}`);
         const def = window.worldItems?.[_hands[side]];
         if (!el) return;
-        el.textContent  = _hands[side] ? (def?.emoji ?? '❓') : (side === 'left' ? '✋' : '🤚');
+
+        const itemEmoji  = _hands[side] ? (def?.emoji ?? '❓') : (side === 'left' ? '✋' : '🤚');
+        const skillEmoji = getSkillEmoji(side);
+        const onCooldown = isSkillOnCooldown(side);
+
+        // Build pill content: skill leads for left, trails for right
+        if (skillEmoji) {
+            const skillSpan = `<span style="font-size:13px;opacity:${onCooldown ? '0.25' : '1'}">${skillEmoji}</span>`;
+            el.innerHTML = side === 'left'
+                ? `${skillSpan}${itemEmoji}`
+                : `${itemEmoji}${skillSpan}`;
+        } else {
+            el.textContent = itemEmoji;
+        }
+
         el.dataset.held = _hands[side] ?? '';
         el.dataset.hand = side;
         el.classList.toggle('wielding',   !!_wielding[side]);
         el.classList.toggle('glow-shiny', def?.glowClass === 'shiny');
+        // Gold glow when skill is ready
+        el.classList.toggle('skill-ready', !!skillEmoji && !onCooldown);
     });
+}
+
+// Returns the skill emoji for a hand if skill is unlocked, else null
+function getSkillEmoji(side) {
+    const itemId = _hands[side];
+    if (!itemId) return null;
+    const def = window.worldItems?.[itemId];
+    const skills = def?.skills;
+    if (!skills?.length) return null;
+    // Check weapon XP level to see if skill is unlocked
+    const xp    = window._weaponXP?.[itemId] ?? 0;
+    const level = weaponLevel(xp);
+    const skill = skills.find(s => level >= (s.minLevel ?? 1));
+    return skill?.emoji ?? null;
+}
+
+function isSkillOnCooldown(side) {
+    const itemId = _hands[side];
+    if (!itemId) return false;
+    const cooldowns = window._skillCooldowns ?? {};
+    const expires   = cooldowns[itemId] ?? 0;
+    return Date.now() < expires;
+}
+
+function weaponLevel(xp) {
+    if (xp >= 200) return 5;
+    if (xp >= 120) return 4;
+    if (xp >=  60) return 3;
+    if (xp >=  20) return 2;
+    return 1;
 }
 
 // ── RENDER BOTBAR ─────────────────────────────────────────
 function renderBotbar() {
-    // notice = narrative only, not a combat lock — show normal botbar
-    const inCombat = _combatState === 'ranged' || _combatState === 'melee';
+    // notice = narrative only — show normal botbar
+    const inCombat  = _combatState === 'ranged' || _combatState === 'melee';
     const bagBtn    = document.getElementById('btn-bag');
     const quitBtn   = document.getElementById('btn-quit');
     const retreatBtn= document.getElementById('btn-retreat');
-    const skillL    = document.getElementById('skill-l');
-    const skillR    = document.getElementById('skill-r');
 
     if (inCombat) {
         bagBtn?.setAttribute('disabled', true);
         bagBtn?.classList.add('locked');
         quitBtn?.classList.add('hidden');
         retreatBtn?.classList.remove('hidden');
-        skillL?.classList.remove('hidden');
-        skillR?.classList.remove('hidden');
-
-        // Skill slots — show item emoji or locked placeholder
-        ['left', 'right'].forEach(side => {
-            const btn = side === 'left' ? skillL : skillR;
-            if (!btn) return;
-            const item = _hands[side];
-            const def  = item ? window.worldItems?.[item] : null;
-            const skill = def?.skills?.[0];
-            if (_wielding[side] && skill) {
-                btn.textContent = skill.emoji ?? '⚔️';
-                btn.classList.remove('dim');
-                btn.dataset.skill = skill.label ?? '';
-                btn.dataset.item  = item;
-            } else if (_wielding[side] && item) {
-                btn.textContent = def?.emoji ?? '⚔️';
-                btn.classList.add('dim');
-                btn.dataset.skill = '';
-            } else {
-                btn.textContent = '·';
-                btn.classList.add('dim');
-                btn.dataset.skill = '';
-            }
-        });
-
     } else {
         bagBtn?.removeAttribute('disabled');
         bagBtn?.classList.remove('locked');
         quitBtn?.classList.remove('hidden');
         retreatBtn?.classList.add('hidden');
-        skillL?.classList.add('hidden');
-        skillR?.classList.add('hidden');
     }
 }
 
@@ -212,11 +204,17 @@ function setText(id, val) {
     if (el) el.textContent = val;
 }
 
-// Called from client.js when a room packet arrives — clears combat UI
-// if server didn't explicitly send a combat reset packet
-export function resetCombatState() {
-    _combatState = 'idle';
-    stopAtb('left');
-    stopAtb('right');
-    renderBotbar();
+// ── SKILL COOLDOWN — called from client.js on skill_cooldown packet ──
+export function applySkillCooldown(itemId, durationMs) {
+    if (!window._skillCooldowns) window._skillCooldowns = {};
+    window._skillCooldowns[itemId] = Date.now() + durationMs;
+    renderHands();
+    // Re-render after cooldown expires
+    setTimeout(() => renderHands(), durationMs + 50);
+}
+
+// ── WEAPON XP — called from client.js on weapon_xp packet ──
+export function updateWeaponXP(weaponXP) {
+    window._weaponXP = weaponXP;
+    renderHands();
 }

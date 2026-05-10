@@ -336,6 +336,10 @@ html, body {
   border-color: var(--gold);
   box-shadow: 0 0 10px rgba(238,187,85,0.6), 0 0 20px rgba(238,187,85,0.2);
 }
+.hand.skill-ready {
+  border-color: var(--gold);
+  box-shadow: 0 0 8px rgba(238,187,85,0.35);
+}
 .wield-btn {
   background: var(--surf2); border: 1px solid rgba(154,122,255,0.4);
   border-radius: 14px; color: var(--accent2);

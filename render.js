@@ -142,7 +142,8 @@ function rebuildChips(currentIds) {
 
   discovered.forEach(obj => {
     const id   = obj.id ?? obj.name;
-    const chip = makeChip(id, obj, currentIds.has(id));
+    // Discovered chips never dim — once found, always shown as found
+    const chip = makeChip(id, obj, true);
     row.appendChild(chip);
   });
 }
@@ -222,21 +223,45 @@ export function openHandCtx(itemId, otherHandItem) {
   // Get hand actions from item def, or fallback defaults
   let handActions = def?.actions?.hand || ['look', 'use', 'throw', 'store', 'drop'];
 
+  // Inject skill action at front if skill is available and not on cooldown
+  const skills = def?.skills ?? [];
+  if (skills.length) {
+    const xp      = window._weaponXP?.[itemId] ?? 0;
+    const level   = xp >= 200 ? 5 : xp >= 120 ? 4 : xp >= 60 ? 3 : xp >= 20 ? 2 : 1;
+    const skill   = skills.find(s => level >= (s.minLevel ?? 1));
+    const cds     = window._skillCooldowns ?? {};
+    const ready   = skill && Date.now() >= (cds[itemId] ?? 0);
+    if (skill) {
+      const skillLabel = ready ? `${skill.emoji} ${skill.label}` : `${skill.emoji} (cooldown)`;
+      handActions = [{ label: skillLabel, action: 'skill', skillId: skill.id, ready }, ...handActions];
+    }
+  }
+
   // Replace use/chop/etc with combine if other hand has an item
   if (otherHandItem) {
-    handActions = handActions.map(a =>
-      (a !== 'look' && a !== 'throw' && a !== 'store' && a !== 'drop') ? 'combine' : a
-    );
+    handActions = handActions.map(a => {
+      if (typeof a !== 'string') return a; // keep skill objects as-is
+      return (a !== 'look' && a !== 'throw' && a !== 'store' && a !== 'drop') ? 'combine' : a;
+    });
   }
 
   handActions.forEach(action => {
+    // Handle skill objects
+    if (typeof action === 'object' && action.action === 'skill') {
+      const b = makeActionBtn(action.label, () => {
+        if (action.ready) window.sendText(`skill ${sendId} ${action.skillId}`);
+        closeCtx();
+      });
+      if (!action.ready) b.setAttribute('disabled', true);
+      btns.appendChild(b);
+      return;
+    }
     const b = makeActionBtn(action, () => {
       if (action === 'throw') {
         window.sendText('throw ' + sendId);
       } else if (action === 'combine') {
         window.sendText('use ' + sendId);
       } else if (action !== 'look' && action !== 'store' && action !== 'drop') {
-        // Custom action label (chop, use, etc) — send as use
         window.sendText('use ' + sendId);
       } else {
         window.sendText(action + ' ' + sendId);
@@ -275,18 +300,15 @@ export function log(msg, cls) {
   if (!el) return;
   const d = document.createElement('div');
   d.className = 'll ' + (cls ?? 'll-sys');
-  // Only wrap player names if msg doesn't already contain HTML spans
-  // (avoids double-wrapping when renderRoom passes pre-built HTML)
+  // Wrap any known player names in clickable spans
   let html = msg;
-  if (!msg.includes('<span') && _playersInRoom.size) {
-    _playersInRoom.forEach(name => {
-      if (!name) return;
-      const re = new RegExp(`\\b(${name})\\b`, 'g');
-      html = html.replace(re,
-        `<span class="player-name" data-name="${name}" style="color:var(--accent2);cursor:pointer;border-bottom:1px dotted rgba(192,170,255,0.4);">$1</span>`
-      );
-    });
-  }
+  _playersInRoom.forEach(name => {
+    if (!name) return;
+    const re = new RegExp(`\\b(${name})\\b`, 'g');
+    html = html.replace(re,
+      `<span class="player-name" data-name="${name}" style="color:var(--accent2);cursor:pointer;border-bottom:1px dotted rgba(192,170,255,0.4);">$1</span>`
+    );
+  });
   d.innerHTML = html;
   el.appendChild(d);
   el.scrollTop = el.scrollHeight;
@@ -312,7 +334,9 @@ function setZones(exits) {
 
 // ── DISCOVERY COUNTER ────────────────────────────────────
 function updateDiscoveryCounter() {
-  const found   = Object.values(_objects).filter(o => o.discovered && o.native !== false && !o.hidden).length;
+  // Count all discovered native items — including ones picked up or hidden
+  // Discovery is permanent, like a checklist
+  const found   = Object.values(_objects).filter(o => o.discovered && o.native !== false).length;
   const label   = document.getElementById('discovered-label');
   const section = document.getElementById('discovered');
   if (_totalDiscoverable > 0) {
@@ -415,12 +439,13 @@ export function showInventory(pkt) {
   function makeRow(itemId, label, actions) {
     const def   = defs?.[itemId] || {};
     const emoji = def.emoji || '';
+    const displayName = def.name || itemId;
     const row   = document.createElement('div');
     row.style.cssText = 'display:flex;align-items:center;gap:6px;margin:2px 0;';
 
     const name = document.createElement('span');
     name.style.cssText = 'color:#f0c060;cursor:pointer;';
-    name.textContent = (emoji ? emoji + ' ' : '') + itemId + ' ';
+    name.textContent = (emoji ? emoji + ' ' : '') + displayName + ' ';
 
     const sub = document.createElement('em');
     sub.style.cssText = 'color:#5a5070;font-size:11px;';
