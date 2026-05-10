@@ -137,18 +137,36 @@ window._syncWielding = function(wielding) {
 
 // ── RENDER HANDS ─────────────────────────────────────────
 function renderHands() {
+    const inCombat = _combatState === 'ranged' || _combatState === 'melee';
+
     ['left', 'right'].forEach(side => {
         const el  = document.getElementById(`hand-${side[0]}`);
         const def = window.worldItems?.[_hands[side]];
         if (!el) return;
 
-        // Weapon pill — just the item emoji, clean
-        el.textContent  = _hands[side] ? (def?.emoji ?? '❓') : (side === 'left' ? '✋' : '🤚');
+        const itemEmoji = _hands[side] ? (def?.emoji ?? '❓') : (side === 'left' ? '✋' : '🤚');
+
+        // Out of combat: show skill emoji on pill if skill available
+        if (!inCombat) {
+            const skill = getSkillForSide(side);
+            if (skill) {
+                el.innerHTML = side === 'left'
+                    ? `<span style="font-size:13px">${skill.emoji}</span>${itemEmoji}`
+                    : `${itemEmoji}<span style="font-size:13px">${skill.emoji}</span>`;
+            } else {
+                el.textContent = itemEmoji;
+            }
+        } else {
+            // In combat: weapon pill is clean, skill has its own pill
+            el.textContent = itemEmoji;
+        }
+
         el.dataset.held = _hands[side] ?? '';
         el.dataset.hand = side;
         el.classList.toggle('wielding',   !!_wielding[side]);
         el.classList.toggle('glow-shiny', def?.glowClass === 'shiny');
     });
+
     renderSkillPills();
 }
 
