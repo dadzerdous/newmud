@@ -56,6 +56,8 @@ document.getElementById('btn-quit').addEventListener('click', () => {
   localStorage.removeItem('mg_token');
   sendText('quit');
 });
+document.getElementById('hud-conn').addEventListener('click', () => sendText('who'));
+document.getElementById('hud-conn').style.cursor = 'pointer';
 
 document.getElementById('hand-l').addEventListener('click', () => {
   const el    = document.getElementById('hand-l');
