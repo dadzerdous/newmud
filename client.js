@@ -2,7 +2,7 @@
 // client.js — WebSocket + routing
 // ════════════════════════════════════════
 
-import { renderRoom, log, clearRoom, restoreDiscovered, setTotalDiscoverable, showInventory, startTargeting } from './render.js';
+import { renderRoom, log, clearRoom, restoreDiscovered, setTotalDiscoverable, showInventory, toggleInventory, startTargeting, renderItemDetail } from './render.js';
 import { updateHUD, setHeld, setHands, updateCombatState, handleCombatPacket, resetCombatState, applySkillCooldown, updateWeaponXP } from './hud.js';
 import { hideAuth, applyTheme, bindAuth } from './auth.js';
 import { MockSocket }                     from './mock.js';
@@ -76,14 +76,6 @@ function route(pkt) {
       updateHUD(pkt.player);
       break;
 
-    case 'skill_cooldown':
-      applySkillCooldown(pkt.itemId, pkt.durationMs);
-      break;
-
-    case 'weapon_xp':
-      updateWeaponXP(pkt.weaponXP);
-      break;
-
     case 'stats':
       updateHUD(pkt);
       break;
@@ -107,11 +99,11 @@ function route(pkt) {
       window._room = pkt;
       if (pkt.totalDiscoverable) setTotalDiscoverable(pkt.totalDiscoverable);
       renderRoom(pkt, selfName);
-      // If server sends a room with no active combat, reset the combat UI
-      // (handles moving rooms during notice, or after death respawn)
       if (!pkt.combatStage || pkt.combatStage === 'idle' || pkt.combatStage === 'notice') {
-          resetCombatState();
+        resetCombatState();
       }
+      // Close inventory panel on room change
+      import('./render.js').then(m => m.toggleInventory && document.getElementById('inv-panel') && !document.getElementById('inv-panel').classList.contains('hidden') && m.toggleInventory());
       break;
 
     case 'wielding':
@@ -125,16 +117,12 @@ function route(pkt) {
       break;
 
     case 'system': {
-      const cls = pkt.msgType === 'hit-player' ? 'll-hit-player'
-                : pkt.msgType === 'hit-enemy'  ? 'll-hit-enemy'
-                : pkt.msgType === 'hit-left'   ? 'll-hit-player' // legacy
-                : pkt.msgType === 'hit-right'  ? 'll-hit-player' // legacy
-                : pkt.msgType === 'hit'        ? 'll-hit'
-                : pkt.msgType === 'miss'       ? 'll-miss'
-                : pkt.msgType === 'event'      ? 'll-event'
-                : pkt.msgType === 'action'     ? 'll-action'
+      const cls = pkt.msgType === 'hit'    ? 'll-hit'
+                : pkt.msgType === 'miss'   ? 'll-miss'
+                : pkt.msgType === 'event'  ? 'll-event'
+                : pkt.msgType === 'action' ? 'll-action'
                 : 'll-sys';
-      if (['hit-player','hit-enemy','hit-left','hit-right','hit','miss'].includes(pkt.msgType)) {
+      if (pkt.msgType === 'hit' || pkt.msgType === 'miss') {
         const el = document.getElementById('log');
         if (el) { const hr = document.createElement('div'); hr.className = 'll-sep'; el.appendChild(hr); }
       }
@@ -143,9 +131,20 @@ function route(pkt) {
     }
 
     case 'inventory':
-      // Update worldItems with server's item data
       if (pkt.items) window.worldItems = { ...window.worldItems, ...pkt.items };
       showInventory(pkt);
+      break;
+
+    case 'item_detail':
+      renderItemDetail(pkt);
+      break;
+
+    case 'skill_cooldown':
+      applySkillCooldown(pkt.itemId, pkt.durationMs);
+      break;
+
+    case 'weapon_xp':
+      updateWeaponXP(pkt.weaponXP);
       break;
 
     case 'target_prompt':

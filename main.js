@@ -50,7 +50,16 @@ document.addEventListener('keydown', e => {
 });
 
 // ── BOTTOM BAR ────────────────────────────────────────────
-document.getElementById('btn-bag').addEventListener('click', () => sendText('inv'));
+document.getElementById('btn-bag').addEventListener('click', () => {
+  const panel = document.getElementById('inv-panel');
+  if (panel && !panel.classList.contains('hidden')) {
+    // Panel open — close it
+    import('./render.js').then(m => m.toggleInventory());
+  } else {
+    // Fetch fresh inventory from server, panel opens on receipt
+    sendText('inv');
+  }
+});
 document.getElementById('btn-retreat').addEventListener('click', () => sendText('retreat'));
 document.getElementById('btn-quit').addEventListener('click', () => {
   localStorage.removeItem('mg_token');
