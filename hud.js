@@ -51,10 +51,20 @@ export function handleCombatPacket(pkt) {
     renderHands();
     renderBotbar();
 
-    // ATB — only runs in melee
+    // ATB — runs in melee for wielded weapons AND empty hands (unarmed)
     if (_combatState === 'melee') {
-        if (_wielding.left  && _hands.left)  startAtb('left');
-        if (_wielding.right && _hands.right) startAtb('right');
+        const leftShouldFire  = _wielding.left  || !_hands.left;
+        const rightShouldFire = _wielding.right || !_hands.right;
+        if (leftShouldFire && !_atbTimers.left) startAtb('left');
+        if (rightShouldFire && !_atbTimers.right) {
+            const rightSpeed = getAtbSpeed(_hands.right);
+            if (!_atbTimers['_atbStagger']) {
+                _atbTimers['_atbStagger'] = setTimeout(() => {
+                    _atbTimers['_atbStagger'] = null;
+                    if (_combatState === 'melee' && !_atbTimers.right) startAtb('right');
+                }, Math.floor(rightSpeed / 2));
+            }
+        }
     } else {
         stopAtb('left');
         stopAtb('right');
@@ -79,20 +89,27 @@ function startAtb(side) {
     el.style.setProperty('--atb-duration', `${speed}ms`);
 
     _atbTimers[side] = setTimeout(() => {
-        if (_combatState !== 'melee' || !_wielding[side]) return;
-        // Auto-fire
-        window.sendText('attack ' + _hands[side]);
+        const isUnarmed = !_hands[side];
+        if (_combatState !== 'melee') return;
+        if (!isUnarmed && !_wielding[side]) return;
+        const attackArg = _hands[side] || `unarmed-${side}`;
+        window.sendText('attack ' + attackArg);
         el.classList.remove('atb-filling');
         el.classList.add('atb-ready');
         setTimeout(() => {
             el.classList.remove('atb-ready');
-            if (_combatState === 'melee' && _wielding[side]) startAtb(side);
+            const shouldContinue = _combatState === 'melee' && (_wielding[side] || !_hands[side]);
+            if (shouldContinue) startAtb(side);
         }, 300);
     }, speed);
 }
 
 function stopAtb(side) {
     if (_atbTimers[side]) { clearTimeout(_atbTimers[side]); _atbTimers[side] = null; }
+    if (side === 'right' && _atbTimers['_atbStagger']) {
+        clearTimeout(_atbTimers['_atbStagger']);
+        _atbTimers['_atbStagger'] = null;
+    }
     const el = document.getElementById(`hand-${side[0]}`);
     if (el) el.classList.remove('atb-filling', 'atb-ready');
 }
