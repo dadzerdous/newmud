@@ -204,6 +204,15 @@ function setText(id, val) {
     if (el) el.textContent = val;
 }
 
+// ── RESET COMBAT STATE — called from client.js on room packet ──
+export function resetCombatState() {
+    _combatState = 'idle';
+    stopAtb('left');
+    stopAtb('right');
+    renderHands();
+    renderBotbar();
+}
+
 // ── SKILL COOLDOWN — called from client.js on skill_cooldown packet ──
 export function applySkillCooldown(itemId, durationMs) {
     if (!window._skillCooldowns) window._skillCooldowns = {};
