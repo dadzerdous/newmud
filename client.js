@@ -2,8 +2,8 @@
 // client.js — WebSocket + routing
 // ════════════════════════════════════════
 
-import { renderRoom, log, clearRoom, restoreDiscovered, setTotalDiscoverable, showInventory, toggleInventory, startTargeting, renderItemDetail } from './render.js';
-import { updateHUD, setHeld, setHands, updateCombatState, handleCombatPacket, resetCombatState, applySkillCooldown, updateWeaponXP } from './hud.js';
+import { renderRoom, log, clearRoom, restoreDiscovered, setTotalDiscoverable, showInventory, startTargeting } from './render.js';
+import { updateHUD, setHeld, setHands, updateCombatState, handleCombatPacket } from './hud.js';
 import { hideAuth, applyTheme, bindAuth } from './auth.js';
 import { MockSocket }                     from './mock.js';
 
@@ -72,6 +72,7 @@ function route(pkt) {
     case 'player_state':
       hideAuth();
       selfName = pkt.player?.name;
+      window._playerAcc = pkt.player;
       if (pkt.player?.race) applyTheme(pkt.player.race);
       updateHUD(pkt.player);
       break;
@@ -99,11 +100,6 @@ function route(pkt) {
       window._room = pkt;
       if (pkt.totalDiscoverable) setTotalDiscoverable(pkt.totalDiscoverable);
       renderRoom(pkt, selfName);
-      if (!pkt.combatStage || pkt.combatStage === 'idle' || pkt.combatStage === 'notice') {
-        resetCombatState();
-      }
-      // Close inventory panel on room change
-      import('./render.js').then(m => m.toggleInventory && document.getElementById('inv-panel') && !document.getElementById('inv-panel').classList.contains('hidden') && m.toggleInventory());
       break;
 
     case 'wielding':
@@ -135,16 +131,9 @@ function route(pkt) {
       showInventory(pkt);
       break;
 
-    case 'item_detail':
-      renderItemDetail(pkt);
-      break;
-
-    case 'skill_cooldown':
-      applySkillCooldown(pkt.itemId, pkt.durationMs);
-      break;
-
-    case 'weapon_xp':
-      updateWeaponXP(pkt.weaponXP);
+    case 'quest_state':
+      window._questState = pkt.quests;
+      if (window._onQuestState) window._onQuestState(pkt.quests);
       break;
 
     case 'target_prompt':

@@ -77,11 +77,7 @@ html, body {
   padding: 0 12px; gap: 8px;
 }
 #hud-left { display: flex; align-items: center; gap: 8px; min-width: 0; }
-#hud-conn {
-  font-size: 11px; color: var(--muted); flex-shrink: 0;
-  cursor: pointer; padding: 8px 6px; margin: -8px -6px;
-  touch-action: manipulation; -webkit-tap-highlight-color: rgba(154,122,255,0.15);
-}
+#hud-conn { font-size: 11px; color: var(--muted); flex-shrink: 0; }
 #hud-name { font-size: 11px; color: var(--accent2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 #hud-stats { display: flex; gap: 4px; flex-shrink: 0; }
 .stat {
@@ -314,10 +310,10 @@ html, body {
 }
 #hands-center {
   display: flex; align-items: center; justify-content: center;
-  gap: 10px; flex: 1;
+  gap: 6px; flex: 1;
 }
-.hand-group {
-  display: flex; align-items: center; gap: 5px;
+#hand-l-wrap, #hand-r-wrap {
+  display: flex; align-items: center; gap: 4px;
 }
 .bot-btn {
   background: var(--surf2); border: 1px solid var(--border);
@@ -327,83 +323,28 @@ html, body {
 }
 .bot-btn:active { background: var(--border2); }
 .bot-btn.danger { color: var(--danger); border-color: rgba(255,96,96,0.2); }
-
-/* ── WEAPON PILL — auto-attacks, ATB opacity animation ── */
-.weapon-pill {
-  background: var(--surf2); border: 1px solid var(--border);
-  border-radius: 20px; padding: 5px 11px; font-size: 17px;
-  cursor: pointer; user-select: none;
-  transition: border-color 0.15s, box-shadow 0.15s;
-}
-.weapon-pill:active { border-color: var(--gold); }
-.weapon-pill.wielding {
-  border-color: var(--accent);
-  box-shadow: 0 0 8px rgba(154,122,255,0.4);
-}
-.weapon-pill.glow-shiny {
-  border-color: var(--gold);
-  box-shadow: 0 0 10px rgba(238,187,85,0.6);
-}
-/* ATB charging: dim → undim over attack speed duration */
-.weapon-pill.atb-filling {
-  animation: atbCharge var(--atb-duration, 2500ms) linear forwards;
-}
-/* ATB fired: gold flash */
-.weapon-pill.atb-ready {
-  border-color: var(--gold) !important;
-  box-shadow: 0 0 14px rgba(238,187,85,0.8) !important;
-  animation: atbFlash 0.3s ease-out forwards;
-}
-@keyframes atbCharge {
-  0%   { opacity: 0.25; border-color: rgba(150,120,255,0.08); }
-  85%  { opacity: 0.85; }
-  100% { opacity: 1.0;  border-color: rgba(150,120,255,0.5); }
-}
-@keyframes atbFlash {
-  0%   { opacity: 1; box-shadow: 0 0 18px rgba(238,187,85,1); }
-  100% { opacity: 1; box-shadow: 0 0 4px rgba(238,187,85,0.2); }
-}
-
-/* ── SKILL PILL — player-tapped ── */
-.skill-pill {
-  background: var(--surf2); border: 1px solid rgba(150,120,255,0.15);
-  border-radius: 20px; padding: 5px 10px; font-size: 14px;
-  color: var(--muted); cursor: pointer; user-select: none;
-  font-family: Georgia, serif;
-  transition: border-color 0.15s, box-shadow 0.15s, opacity 0.15s;
-}
-.skill-pill.hidden { display: none !important; }
-/* No skill unlocked yet */
-.skill-pill.no-skill {
-  opacity: 0.3;
-  pointer-events: none;
-}
-/* Skill ready — gold border + soft pulse */
-.skill-pill.ready {
-  border-color: var(--gold);
-  color: var(--gold);
-  box-shadow: 0 0 8px rgba(238,187,85,0.4);
-  animation: skillPulse 2s ease-in-out infinite;
-}
-/* Skill cooldown — same dim animation as ATB charge */
-.skill-pill.charging {
-  animation: atbCharge var(--skill-duration, 8000ms) linear forwards;
-  pointer-events: none;
-}
-@keyframes skillPulse {
-  0%, 100% { box-shadow: 0 0 5px rgba(238,187,85,0.25); }
-  50%       { box-shadow: 0 0 14px rgba(238,187,85,0.6); border-color: #ffdd88; }
-}
-
-/* legacy — keep for any remaining .hand references */
 .hand {
   background: var(--surf2); border: 1px solid var(--border);
   border-radius: 20px; padding: 5px 9px; font-size: 17px; cursor: pointer;
 }
-.hand.wielding { border-color: var(--accent); box-shadow: 0 0 8px rgba(154,122,255,0.4); }
-.hand.glow-shiny { border-color: var(--gold); box-shadow: 0 0 10px rgba(238,187,85,0.6); }
-
-
+.hand:active { border-color: var(--gold); }
+.hand.wielding {
+  border-color: var(--accent);
+  box-shadow: 0 0 8px rgba(154,122,255,0.4);
+}
+.hand.glow-shiny {
+  border-color: var(--gold);
+  box-shadow: 0 0 10px rgba(238,187,85,0.6), 0 0 20px rgba(238,187,85,0.2);
+}
+.wield-btn {
+  background: var(--surf2); border: 1px solid rgba(154,122,255,0.4);
+  border-radius: 14px; color: var(--accent2);
+  font-family: Georgia, serif; font-size: 11px;
+  padding: 5px 10px; cursor: pointer; white-space: nowrap;
+}
+.wield-btn:active { background: var(--accent); color: #000; }
+.wield-btn.flee { border-color: rgba(255,96,96,0.5); color: var(--danger); }
+.wield-btn.hidden { display: none; }
 
 /* ══════════════════════════════════════
    AUTH MODAL
@@ -509,9 +450,47 @@ html, body {
 }
 
 /* ══════════════════════════════════════
-   INVENTORY PANEL
+   PLAYER CHIP
 ══════════════════════════════════════ */
-#inv-panel {
+#player-chip {
+  background: #0e0d1a;
+  border: 1px solid rgba(150,120,255,0.28);
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin: 0 6px 4px;
+  flex-shrink: 0;
+}
+.pchip-header {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 7px;
+}
+.pchip-avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: rgba(154,122,255,0.15); border: 1px solid rgba(154,122,255,0.3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; flex-shrink: 0;
+}
+.pchip-name { font-size: 13px; color: #c0aaff; }
+.pchip-sub  { font-size: 10px; color: #6e6488; font-family: sans-serif; margin-top: 1px; }
+.pchip-close {
+  margin-left: auto; font-size: 11px; color: #9a7aff;
+  background: #1e1a30; border: 1px solid rgba(150,120,255,0.3);
+  border-radius: 6px; padding: 2px 8px; font-family: sans-serif; cursor: pointer; flex-shrink: 0;
+}
+.pchip-btns { display: flex; gap: 5px; }
+.pchip-btn {
+  background: #1e1a30; border: 1px solid rgba(150,120,255,0.3);
+  border-radius: 12px; color: #b8a8f0; font-size: 11px;
+  padding: 4px 12px; cursor: pointer; font-family: Georgia, serif;
+}
+.pchip-btn.active {
+  border-color: #9a7aff; color: #c0aaff;
+  background: rgba(154,122,255,0.1);
+}
+
+/* ══════════════════════════════════════
+   QUEST PANEL
+══════════════════════════════════════ */
+#quest-panel {
   background: #100f18;
   border: 1px solid rgba(150,120,255,0.32);
   border-radius: 10px;
@@ -519,133 +498,49 @@ html, body {
   margin: 4px 6px;
   flex-shrink: 0;
 }
-
-#inv-header {
+.quest-header {
   display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
-#inv-title {
+.quest-title {
   font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
   color: #6e6488; font-family: sans-serif;
 }
-#inv-page-label { font-size: 10px; color: #3a3050; font-family: sans-serif; }
-#inv-close {
-  font-size: 11px; color: #9a7aff; cursor: pointer;
+.quest-close {
+  font-size: 11px; color: #9a7aff;
   background: #1e1a30; border: 1px solid rgba(150,120,255,0.3);
-  border-radius: 6px; padding: 2px 9px; font-family: sans-serif;
+  border-radius: 6px; padding: 1px 8px; font-family: sans-serif; cursor: pointer;
 }
+.quest-body {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px; min-height: 130px;
+}
+.quest-steps { display: flex; flex-direction: column; gap: 2px; }
+.qstep {
+  display: flex; align-items: flex-start; gap: 5px;
+  padding: 4px 6px; border-radius: 7px; cursor: pointer;
+  transition: background 0.1s;
+}
+.qstep:hover  { background: rgba(150,120,255,0.06); }
+.qstep.selected { background: rgba(150,120,255,0.1); }
+.qstep-icon { font-size: 11px; flex-shrink: 0; margin-top: 1px; font-family: sans-serif; }
+.qstep-icon.done    { color: #5dcaa5; }
+.qstep-icon.current { color: #9a7aff; }
+.qstep-icon.pending { color: #3a3050; }
+.qstep-label { font-size: 11px; line-height: 1.4; }
+.qstep-label.done    { color: #5a5070; }
+.qstep-label.current { color: #c0aaff; }
+.qstep-label.pending { color: #3a3050; }
+.quest-detail {
+  border-left: 1px solid rgba(150,120,255,0.12);
+  padding-left: 8px; display: flex; flex-direction: column; gap: 5px;
+}
+.qd-name    { font-size: 11px; color: #c0aaff; font-family: Georgia, serif; }
+.qd-flavour { font-size: 11px; color: #6e6488; font-style: italic; line-height: 1.5; font-family: Georgia, serif; }
+.qd-status  { font-size: 10px; font-family: sans-serif; padding: 2px 8px; border-radius: 10px; display: inline-block; }
+.status-done    { background: rgba(93,202,165,0.15); color: #5dcaa5; }
+.status-current { background: rgba(154,122,255,0.15); color: #9a7aff; }
+.status-locked  { background: rgba(150,120,255,0.06); color: #3a3050; }
 
-/* Action bar */
-#inv-action-bar {
-  background: #0e0d1a;
-  border: 1px solid rgba(150,120,255,0.2);
-  border-radius: 7px;
-  padding: 7px 9px;
-  margin-bottom: 7px;
-}
-.inv-action-who {
-  font-size: 12px; color: #c0aaff;
-  display: flex; align-items: baseline; gap: 7px;
-  margin-bottom: 5px; font-family: Georgia, serif;
-}
-.inv-action-sub { font-size: 10px; color: #6e6488; font-family: sans-serif; }
-.inv-action-btns { display: flex; flex-wrap: wrap; gap: 4px; }
-.inv-action-btn {
-  background: #1e1a30; border: 1px solid rgba(150,120,255,0.3);
-  border-radius: 12px; color: #b8a8f0; font-size: 11px;
-  padding: 3px 11px; cursor: pointer; font-family: Georgia, serif;
-}
-.inv-action-btn.skill { border-color: rgba(238,187,85,0.5); color: #eebb55; }
-.inv-action-btn.skill.dim { opacity: 0.4; pointer-events: none; }
-.inv-action-btn.danger { border-color: rgba(255,96,96,0.35); color: #ff7060; }
-
-/* Swipe scroll track */
-#inv-scroll-wrap {
-  overflow-x: scroll;
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-}
-#inv-scroll-wrap::-webkit-scrollbar { display: none; }
-#inv-scroll-track {
-  display: flex;
-  width: max-content;
-}
-.inv-page {
-  display: flex; gap: 7px;
-  scroll-snap-align: start;
-  flex-shrink: 0;
-  /* Width set by JS to match container */
-}
-
-/* Slots */
-.inv-slot {
-  background: #181622; border: 1px solid rgba(150,120,255,0.15);
-  border-radius: 9px; width: 54px; height: 54px; flex-shrink: 0;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 2px; cursor: pointer; position: relative;
-  transition: border-color 0.1s;
-}
-.inv-slot.hand-item { border-color: rgba(154,122,255,0.38); }
-.inv-slot.shiny     { border-color: rgba(238,187,85,0.55); box-shadow: 0 0 5px rgba(238,187,85,0.2); }
-.inv-slot.selected  { border-color: #9a7aff; box-shadow: 0 0 7px rgba(154,122,255,0.3); }
-.inv-slot.empty     { cursor: default; }
-.inv-emoji { font-size: 20px; }
-.inv-name  { font-size: 8px; color: #6e6488; font-family: sans-serif; text-align: center; line-height: 1.1; }
-.hand-badge {
-  position: absolute; top: 2px; right: 4px;
-  font-size: 8px; font-family: sans-serif; font-weight: 600; color: #9a7aff;
-}
-.inv-slot.empty .inv-emoji { font-size: 12px; opacity: 0.1; }
-
-/* Page dots */
-#inv-dots { display: flex; justify-content: center; gap: 5px; margin-top: 5px; }
-.inv-dot {
-  width: 5px; height: 5px; border-radius: 50%;
-  background: rgba(150,120,255,0.18); transition: background 0.2s;
-}
-.inv-dot.active { background: #9a7aff; }
-
-/* ══════════════════════════════════════
-   ITEM DETAIL CARD (in log)
-══════════════════════════════════════ */
-.idc-card {
-  background: #100f18; border: 1px solid rgba(150,120,255,0.28);
-  border-radius: 9px; padding: 10px 12px; margin: 4px 0;
-  font-family: Georgia, serif;
-}
-.idc-header {
-  display: flex; align-items: center; gap: 8px;
-  border-bottom: 1px solid rgba(150,120,255,0.1);
-  padding-bottom: 7px; margin-bottom: 7px;
-}
-.idc-emoji  { font-size: 20px; }
-.idc-title  { font-size: 13px; color: #c0aaff; flex: 1; }
-.idc-cat    { font-size: 10px; color: #6e6488; font-family: sans-serif; }
-.idc-flavour { font-size: 11px; color: #6e6488; font-style: italic; line-height: 1.5; margin-bottom: 7px; }
-.idc-xp-label { font-size: 10px; color: #6e6488; font-family: sans-serif; margin-bottom: 3px; }
-.idc-xp-bar { height: 3px; background: rgba(150,120,255,0.12); border-radius: 2px; margin-bottom: 7px; }
-.idc-xp-fill { height: 100%; background: #9a7aff; border-radius: 2px; }
-.idc-stats {
-  display: grid; grid-template-columns: 1fr 1fr;
-  gap: 4px 8px; margin-bottom: 7px;
-}
-.idc-stat { display: flex; gap: 5px; align-items: baseline; }
-.idc-stat-l { font-size: 9px; color: #3a3050; font-family: sans-serif; text-transform: uppercase; letter-spacing: 0.8px; width: 44px; flex-shrink: 0; }
-.idc-stat-v { font-size: 11px; color: #ddd4ff; font-family: 'Courier New', monospace; }
-.idc-skills-title {
-  font-size: 9px; color: #3a3050; font-family: sans-serif;
-  text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;
-}
-.idc-skill {
-  display: flex; align-items: flex-start; gap: 7px;
-  padding: 5px 0; border-top: 1px solid rgba(150,120,255,0.07);
-}
-.idc-skill.locked { opacity: 0.4; }
-.idc-skill-emoji { font-size: 14px; flex-shrink: 0; margin-top: 1px; }
-.idc-skill-body  { flex: 1; min-width: 0; }
-.idc-skill-name  { font-size: 12px; color: #c0aaff; }
-.idc-skill-name.locked { color: #3a3050; }
-.idc-skill-desc  { font-size: 11px; color: #6e6488; line-height: 1.4; margin-top: 1px; font-family: sans-serif; }
-.idc-skill-cost  { font-size: 10px; color: #9a7aff; margin-top: 2px; font-family: sans-serif; }
-.idc-lock { font-size: 10px; color: #3a3050; margin-left: auto; font-family: sans-serif; flex-shrink: 0; }
+/* hud-name clickable */
+#hud-name { cursor: pointer; }
+#hud-name:hover { color: var(--accent); }

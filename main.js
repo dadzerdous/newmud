@@ -4,7 +4,7 @@
 
 import { connect, sendText } from './client.js';
 import { showAuth }          from './auth.js';
-import { closeCtx, openHandCtx } from './render.js';
+import { closeCtx, openHandCtx, togglePlayerChip } from './render.js';
 import { toggleWield } from './hud.js';
 
 // ── ITEMS ─────────────────────────────────────────────────
@@ -53,10 +53,8 @@ document.addEventListener('keydown', e => {
 document.getElementById('btn-bag').addEventListener('click', () => {
   const panel = document.getElementById('inv-panel');
   if (panel && !panel.classList.contains('hidden')) {
-    // Panel open — close it
-    import('./render.js').then(m => m.toggleInventory());
+    import('./render.js').then(m => m.toggleInventory?.());
   } else {
-    // Fetch fresh inventory from server, panel opens on receipt
     sendText('inv');
   }
 });
@@ -65,8 +63,14 @@ document.getElementById('btn-quit').addEventListener('click', () => {
   localStorage.removeItem('mg_token');
   sendText('quit');
 });
+
+// ── HUD CLICKS ────────────────────────────────────────────
 document.getElementById('hud-conn').addEventListener('click', () => sendText('who'));
-document.getElementById('hud-conn').style.cursor = 'pointer';
+document.getElementById('hud-conn').style.cssText += ';cursor:pointer;padding:8px 6px;margin:-8px -6px;touch-action:manipulation;';
+document.getElementById('hud-name').addEventListener('click', () => {
+  togglePlayerChip(window._playerAcc);
+});
+document.getElementById('hud-name').style.cursor = 'pointer';
 
 document.getElementById('hand-l').addEventListener('click', () => {
   const el    = document.getElementById('hand-l');
@@ -81,20 +85,6 @@ document.getElementById('hand-r').addEventListener('click', () => {
   const other = document.getElementById('hand-l').dataset.held;
   if (held) openHandCtx(held, other || null);
   else sendText('hands');
-});
-
-// Skill pill clicks — fire skill directly
-document.getElementById('skill-l')?.addEventListener('click', () => {
-  const btn = document.getElementById('skill-l');
-  const itemId  = btn.dataset.itemId;
-  const skillId = btn.dataset.skillId;
-  if (itemId && skillId) sendText(`skill ${itemId} ${skillId}`);
-});
-document.getElementById('skill-r')?.addEventListener('click', () => {
-  const btn = document.getElementById('skill-r');
-  const itemId  = btn.dataset.itemId;
-  const skillId = btn.dataset.skillId;
-  if (itemId && skillId) sendText(`skill ${itemId} ${skillId}`);
 });
 
 // ── WIELD BUTTONS ─────────────────────────────────────────
