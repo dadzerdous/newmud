@@ -178,7 +178,6 @@
       ],
       "hand": [
         "look",
-        "use",
         "throw",
         "store",
         "drop"
@@ -323,17 +322,13 @@
     "slot": "hand",
     "throwable": false,
     "wieldable": true,
-    "skills": [
-      {
-        "id": "dazzle",
-        "label": "Dazzle",
-        "emoji": "✨",
-        "minLevel": 1,
-        "manaCost": 15,
-        "cooldownMs": 8000,
-        "description": "Flash the coin. 25% chance to blind — enemy misses next attack."
+    "special": {
+      "dazzle": {
+        "chance": 0.25,
+        "effect": "blind",
+        "duration": 2
       }
-    ],
+    },
     "textByRace": {
       "goblin": "The coin catches everything. You are the most dangerous thing in this forest and you look incredible.",
       "human": "The false coin catches light like a real one. Enemies will see it before they see you.",
@@ -354,6 +349,17 @@
         "retrieve",
         "drop"
       ]
+    }
+  },
+  "mouse_fur": {
+    "id": "mouse_fur",
+    "name": "Mouse Fur",
+    "emoji": "🪶",
+    "category": "material",
+    "actions": {
+      "room": ["look", "take"],
+      "hand": ["look", "store", "drop"],
+      "inventory": ["look", "retrieve", "drop"]
     }
   }
 }
