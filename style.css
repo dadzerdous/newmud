@@ -219,7 +219,7 @@ html, body {
 }
 
 #discovered { margin-bottom: 4px; }
-#disc-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
+#disc-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; align-items: flex-start; }
 .dchip {
   display: inline-flex; align-items: center; gap: 3px;
   background: var(--surf); border: 1px solid rgba(150,120,255,0.2);
