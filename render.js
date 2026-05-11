@@ -411,6 +411,79 @@ document.getElementById('log').addEventListener('click', e => {
 // ── UTIL ─────────────────────────────────────────────────
 function esc(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
 
+// ── COMBAT LOG PANEL ─────────────────────────────────────
+let _combatPanelOpen = false;
+
+export function openCombatPanel(npcName) {
+  _combatPanelOpen = true;
+  _ensureCombatPanel(npcName);
+  document.getElementById('combat-panel')?.classList.remove('hidden');
+}
+
+export function closeCombatPanel() {
+  // Don't actually remove — stays for review
+  // Just update status indicator
+  const status = document.querySelector('.combat-panel-status');
+  if (status) { status.textContent = 'ended'; status.className = 'combat-panel-status cps-over'; }
+}
+
+export function logCombat(msg, side, msgType) {
+  // side: 'enemy' | 'player' | 'event'
+  const colId = side === 'enemy' ? 'combat-col-enemy'
+               : side === 'player' ? 'combat-col-player'
+               : 'combat-col-enemy'; // events go left
+  const col = document.getElementById(colId);
+  if (!col) return;
+
+  const cls = msgType === 'hit-enemy'   ? 'clog-hit-enemy'
+            : msgType === 'miss'        ? (side === 'enemy' ? 'clog-miss-enemy' : 'clog-miss-player')
+            : msgType === 'hit-player'  ? 'clog-hit-player'
+            : msgType === 'event'       ? 'clog-event'
+            : 'clog-event';
+
+  const line = document.createElement('div');
+  line.className = `clog-line ${cls}`;
+  line.textContent = msg;
+  col.appendChild(line);
+  col.scrollTop = col.scrollHeight;
+}
+
+function _ensureCombatPanel(npcName) {
+  let panel = document.getElementById('combat-panel');
+  if (panel) {
+    // Reset for new combat
+    const enemy  = document.getElementById('combat-col-enemy');
+    const player = document.getElementById('combat-col-player');
+    if (enemy)  enemy.innerHTML  = `<div class="combat-col-label">${npcName ?? 'Enemy'}</div>`;
+    if (player) player.innerHTML = `<div class="combat-col-label">You</div>`;
+    const status = panel.querySelector('.combat-panel-status');
+    if (status) { status.textContent = 'active'; status.className = 'combat-panel-status cps-active'; }
+    return;
+  }
+
+  panel = document.createElement('div');
+  panel.id = 'combat-panel';
+  panel.className = 'hidden';
+  panel.innerHTML = `
+    <div class="combat-panel-header">
+      <div class="combat-panel-title">Combat</div>
+      <div class="combat-panel-status cps-active">active</div>
+    </div>
+    <div class="combat-body">
+      <div class="combat-col col-enemy" id="combat-col-enemy">
+        <div class="combat-col-label">${npcName ?? 'Enemy'}</div>
+      </div>
+      <div class="combat-col col-player" id="combat-col-player">
+        <div class="combat-col-label">You</div>
+      </div>
+    </div>
+  `;
+
+  // Insert before #dir-south
+  const south = document.getElementById('dir-south');
+  south?.parentNode?.insertBefore(panel, south);
+}
+
 // ── PLAYER CHIP ───────────────────────────────────────────
 let _playerChipOpen = false;
 let _questPanelOpen = false;

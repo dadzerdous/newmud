@@ -16,6 +16,12 @@ fetch('items.json')
 // ── WELCOME ───────────────────────────────────────────────
 document.getElementById('btn-new').addEventListener('click',   () => showAuth('create'));
 document.getElementById('btn-login').addEventListener('click', () => showAuth('login'));
+document.getElementById('btn-help')?.addEventListener('click', () => {
+  document.getElementById('help-overlay')?.classList.remove('hidden');
+});
+document.getElementById('help-close')?.addEventListener('click', () => {
+  document.getElementById('help-overlay')?.classList.add('hidden');
+});
 
 // ── CHAT ──────────────────────────────────────────────────
 const chatIn   = document.getElementById('chat-in');

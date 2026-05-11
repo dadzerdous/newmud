@@ -14,6 +14,7 @@
   <p>a dark fantasy multiplayer story</p>
   <button id="btn-new">New Character</button>
   <button id="btn-login">Login</button>
+  <button id="btn-help" style="background:transparent;border:none;color:var(--muted);font-family:Georgia,serif;font-size:12px;cursor:pointer;letter-spacing:1px;margin-top:4px;">? help</button>
 </div>
 
 <div id="game" class="hidden">
@@ -26,7 +27,7 @@
     <div id="hud-stats">
       <span class="stat" id="stat-level">Lv 1</span>
       <span class="stat" id="stat-energy">⚡100</span>
-      <span class="stat" id="stat-mana">🔮100</span>
+      <span class="stat" id="stat-stamina">💪100</span>
       <span class="stat" id="stat-hp">❤️100</span>
     </div>
   </div>
@@ -80,18 +81,16 @@
 
   <div id="botbar">
     <button class="bot-btn" id="btn-bag">🎒</button>
-
+    <button class="skill-btn hidden dim" id="skill-l" data-side="left">·</button>
     <div id="hands-center">
-      <div class="hand-group" id="group-l">
-        <button class="skill-pill hidden" id="skill-l" data-side="left">·</button>
-        <div class="weapon-pill" id="hand-l" data-held="" data-hand="left">✋</div>
+      <div id="hand-l-wrap">
+        <div class="hand" id="hand-l">✋</div>
       </div>
-      <div class="hand-group" id="group-r">
-        <div class="weapon-pill" id="hand-r" data-held="" data-hand="right">🤚</div>
-        <button class="skill-pill hidden" id="skill-r" data-side="right">·</button>
+      <div id="hand-r-wrap">
+        <div class="hand" id="hand-r">🤚</div>
       </div>
     </div>
-
+    <button class="skill-btn hidden dim" id="skill-r" data-side="right">·</button>
     <button class="bot-btn danger hidden" id="btn-retreat">retreat</button>
     <button class="bot-btn danger" id="btn-quit">quit</button>
   </div>
@@ -127,5 +126,56 @@
 </div>
 
 <script type="module" src="main.js"></script>
-</body>
+
+<!-- HELP OVERLAY -->
+<div id="help-overlay" class="hidden">
+  <div id="help-panel">
+    <h3>How to Play</h3>
+
+    <div class="help-section">
+      <div class="help-section-title">Top Bar</div>
+      <div class="help-row"><span class="help-icon">●</span><span class="help-text"><strong>● N online</strong> — tap to see who's in the world</span></div>
+      <div class="help-row"><span class="help-icon">👤</span><span class="help-text"><strong>Your name</strong> — tap for your character card, quests, and skills</span></div>
+      <div class="help-row"><span class="help-icon">⚡</span><span class="help-text"><strong>Energy</strong> — used for movement and physical skills. Regens over time.</span></div>
+      <div class="help-row"><span class="help-icon">🔮</span><span class="help-text"><strong>Mana</strong> — used for magic skills like Dazzle. Regens over time.</span></div>
+      <div class="help-row"><span class="help-icon">❤️</span><span class="help-text"><strong>HP</strong> — your health. Reach 0 and you respawn at the start.</span></div>
+    </div>
+
+    <div class="help-section">
+      <div class="help-section-title">The Room</div>
+      <div class="help-row"><span class="help-icon">🟡</span><span class="help-text"><strong>Gold words</strong> — tap them to discover objects and open actions</span></div>
+      <div class="help-row"><span class="help-icon">🔵</span><span class="help-text"><strong>Discovered chips</strong> — tap to open actions again. Show your progress.</span></div>
+      <div class="help-row"><span class="help-icon">📍</span><span class="help-text"><strong>Discovered N/N · Events N/N</strong> — how much of the room you've explored</span></div>
+    </div>
+
+    <div class="help-section">
+      <div class="help-section-title">Movement</div>
+      <div class="help-row"><span class="help-icon">↑</span><span class="help-text"><strong>Direction buttons</strong> — bright = available, dim = no exit that way</span></div>
+    </div>
+
+    <div class="help-section">
+      <div class="help-section-title">Bottom Bar</div>
+      <div class="help-row"><span class="help-icon">🎒</span><span class="help-text"><strong>Bag</strong> — opens your inventory. Swipe to see more items.</span></div>
+      <div class="help-row"><span class="help-icon">✋</span><span class="help-text"><strong>Hand pills</strong> — shows what you're holding. Tap to open actions. Dims and undims to show attack speed in combat.</span></div>
+      <div class="help-row"><span class="help-icon">✨</span><span class="help-text"><strong>Skill pill</strong> — appears in combat next to your weapon. Gold glow = ready to use. Tap to activate.</span></div>
+      <div class="help-row"><span class="help-icon">⚔️</span><span class="help-text"><strong>Retreat</strong> — appears in combat. Staged escape: melee → ranged → notice. 90% chance each step.</span></div>
+    </div>
+
+    <div class="help-section">
+      <div class="help-section-title">Combat</div>
+      <div class="help-row"><span class="help-icon">👁️</span><span class="help-text"><strong>Notice</strong> — creature spotted you. Not in combat yet — you can still move freely.</span></div>
+      <div class="help-row"><span class="help-icon">🏃</span><span class="help-text"><strong>Ranged</strong> — combat starts. Bag locks. Creature is closing in.</span></div>
+      <div class="help-row"><span class="help-icon">⚔️</span><span class="help-text"><strong>Melee</strong> — your weapons auto-attack. Watch the hand pills fill up.</span></div>
+      <div class="help-row"><span class="help-icon">💬</span><span class="help-text"><strong>Combat panel</strong> — splits enemy hits (left) from your hits (right) so you can track both.</span></div>
+    </div>
+
+    <div class="help-section">
+      <div class="help-section-title">Items & Crafting</div>
+      <div class="help-row"><span class="help-icon">🤲</span><span class="help-text"><strong>Combine</strong> — hold two items and tap one — the combine button appears if a recipe exists.</span></div>
+      <div class="help-row"><span class="help-icon">🔍</span><span class="help-text"><strong>Look</strong> — look at a held item to see its stats, XP, and available skills.</span></div>
+    </div>
+
+    <button id="help-close">Got it</button>
+  </div>
+</div>
 </html>

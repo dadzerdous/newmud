@@ -450,97 +450,93 @@ html, body {
 }
 
 /* ══════════════════════════════════════
-   PLAYER CHIP
+   COMBAT LOG PANEL
 ══════════════════════════════════════ */
-#player-chip {
-  background: #0e0d1a;
-  border: 1px solid rgba(150,120,255,0.28);
-  border-radius: 8px;
-  padding: 8px 10px;
-  margin: 0 6px 4px;
-  flex-shrink: 0;
-}
-.pchip-header {
-  display: flex; align-items: center; gap: 8px; margin-bottom: 7px;
-}
-.pchip-avatar {
-  width: 32px; height: 32px; border-radius: 50%;
-  background: rgba(154,122,255,0.15); border: 1px solid rgba(154,122,255,0.3);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 16px; flex-shrink: 0;
-}
-.pchip-name { font-size: 13px; color: #c0aaff; }
-.pchip-sub  { font-size: 10px; color: #6e6488; font-family: sans-serif; margin-top: 1px; }
-.pchip-close {
-  margin-left: auto; font-size: 11px; color: #9a7aff;
-  background: #1e1a30; border: 1px solid rgba(150,120,255,0.3);
-  border-radius: 6px; padding: 2px 8px; font-family: sans-serif; cursor: pointer; flex-shrink: 0;
-}
-.pchip-btns { display: flex; gap: 5px; }
-.pchip-btn {
-  background: #1e1a30; border: 1px solid rgba(150,120,255,0.3);
-  border-radius: 12px; color: #b8a8f0; font-size: 11px;
-  padding: 4px 12px; cursor: pointer; font-family: Georgia, serif;
-}
-.pchip-btn.active {
-  border-color: #9a7aff; color: #c0aaff;
-  background: rgba(154,122,255,0.1);
-}
-
-/* ══════════════════════════════════════
-   QUEST PANEL
-══════════════════════════════════════ */
-#quest-panel {
+#combat-panel {
   background: #100f18;
-  border: 1px solid rgba(150,120,255,0.32);
+  border: 1px solid rgba(255,80,80,0.25);
   border-radius: 10px;
   padding: 8px 10px;
   margin: 4px 6px;
   flex-shrink: 0;
+  animation: slideUp 0.2s ease-out;
 }
-.quest-header {
+.combat-panel-header {
   display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 8px;
+  margin-bottom: 7px;
 }
-.quest-title {
+.combat-panel-title {
   font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
-  color: #6e6488; font-family: sans-serif;
+  color: rgba(255,80,80,0.6); font-family: sans-serif;
 }
-.quest-close {
-  font-size: 11px; color: #9a7aff;
-  background: #1e1a30; border: 1px solid rgba(150,120,255,0.3);
-  border-radius: 6px; padding: 1px 8px; font-family: sans-serif; cursor: pointer;
+.combat-panel-status {
+  font-size: 10px; font-family: sans-serif;
+  padding: 1px 8px; border-radius: 10px;
 }
-.quest-body {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 8px; min-height: 130px;
+.cps-active  { background: rgba(255,80,80,0.15); color: #ff6060; }
+.cps-over    { background: rgba(150,120,255,0.1); color: #6e6488; }
+.combat-body {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+  min-height: 80px; max-height: 120px;
 }
-.quest-steps { display: flex; flex-direction: column; gap: 2px; }
-.qstep {
-  display: flex; align-items: flex-start; gap: 5px;
-  padding: 4px 6px; border-radius: 7px; cursor: pointer;
-  transition: background 0.1s;
+.combat-col {
+  display: flex; flex-direction: column; gap: 2px;
+  overflow-y: auto; -webkit-overflow-scrolling: touch;
 }
-.qstep:hover  { background: rgba(150,120,255,0.06); }
-.qstep.selected { background: rgba(150,120,255,0.1); }
-.qstep-icon { font-size: 11px; flex-shrink: 0; margin-top: 1px; font-family: sans-serif; }
-.qstep-icon.done    { color: #5dcaa5; }
-.qstep-icon.current { color: #9a7aff; }
-.qstep-icon.pending { color: #3a3050; }
-.qstep-label { font-size: 11px; line-height: 1.4; }
-.qstep-label.done    { color: #5a5070; }
-.qstep-label.current { color: #c0aaff; }
-.qstep-label.pending { color: #3a3050; }
-.quest-detail {
-  border-left: 1px solid rgba(150,120,255,0.12);
-  padding-left: 8px; display: flex; flex-direction: column; gap: 5px;
+.combat-col::-webkit-scrollbar { display: none; }
+.combat-col-label {
+  font-size: 9px; letter-spacing: 1px; text-transform: uppercase;
+  font-family: sans-serif; margin-bottom: 3px; flex-shrink: 0;
 }
-.qd-name    { font-size: 11px; color: #c0aaff; font-family: Georgia, serif; }
-.qd-flavour { font-size: 11px; color: #6e6488; font-style: italic; line-height: 1.5; font-family: Georgia, serif; }
-.qd-status  { font-size: 10px; font-family: sans-serif; padding: 2px 8px; border-radius: 10px; display: inline-block; }
-.status-done    { background: rgba(93,202,165,0.15); color: #5dcaa5; }
-.status-current { background: rgba(154,122,255,0.15); color: #9a7aff; }
-.status-locked  { background: rgba(150,120,255,0.06); color: #3a3050; }
+.combat-col.col-enemy { border-right: 1px solid rgba(255,80,80,0.1); padding-right: 6px; }
+.combat-col.col-enemy .combat-col-label { color: rgba(255,80,80,0.5); }
+.combat-col.col-player .combat-col-label { color: rgba(150,120,255,0.5); padding-left: 0; }
+.combat-col.col-player { padding-left: 6px; }
+.clog-line {
+  font-family: 'Courier New', monospace; font-size: 11px; line-height: 1.5;
+  flex-shrink: 0;
+}
+.clog-hit-enemy  { color: #cc2222; font-weight: bold; }
+.clog-miss-enemy { color: #664400; font-style: italic; }
+.clog-hit-player { color: #ff7777; }
+.clog-miss-player{ color: #554444; font-style: italic; }
+.clog-event      { color: #aa88ff; font-style: italic; font-size: 10px; }
 
-/* hud-name clickable */
-#hud-name { cursor: pointer; }
-#hud-name:hover { color: var(--accent); }
+/* ══════════════════════════════════════
+   HELP OVERLAY
+══════════════════════════════════════ */
+#help-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.88);
+  z-index: 998; display: flex;
+  align-items: center; justify-content: center;
+  padding: 20px;
+}
+#help-panel {
+  background: #100f18; border: 1px solid rgba(150,120,255,0.32);
+  border-radius: 14px; width: 100%; max-width: 340px;
+  max-height: 85dvh; overflow-y: auto;
+  padding: 18px 16px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+#help-panel h3 {
+  font-size: 13px; letter-spacing: 2px; text-transform: uppercase;
+  color: #c0aaff; text-align: center; margin-bottom: 4px;
+}
+.help-section { border-top: 1px solid rgba(150,120,255,0.1); padding-top: 10px; }
+.help-section-title {
+  font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase;
+  color: #6e6488; font-family: sans-serif; margin-bottom: 6px;
+}
+.help-row {
+  display: flex; align-items: flex-start; gap: 8px; margin-bottom: 6px;
+}
+.help-icon { font-size: 16px; flex-shrink: 0; width: 24px; text-align: center; }
+.help-text { font-size: 12px; color: #9a8ec0; line-height: 1.5; font-family: Georgia, serif; }
+.help-text strong { color: #c0aaff; font-weight: normal; }
+#help-close {
+  background: #1e1a30; border: 1px solid rgba(150,120,255,0.3);
+  border-radius: 9px; color: #9a7aff; font-family: Georgia, serif;
+  font-size: 13px; padding: 10px; cursor: pointer; text-align: center;
+  margin-top: 4px;
+}

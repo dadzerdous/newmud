@@ -2,7 +2,7 @@
 // client.js — WebSocket + routing
 // ════════════════════════════════════════
 
-import { renderRoom, log, clearRoom, restoreDiscovered, setTotalDiscoverable, setRoomEventCounts, showInventory, startTargeting } from './render.js';
+import { renderRoom, log, clearRoom, restoreDiscovered, setTotalDiscoverable, setRoomEventCounts, showInventory, startTargeting, openCombatPanel, closeCombatPanel, logCombat } from './render.js';
 import { updateHUD, setHeld, setHands, updateCombatState, handleCombatPacket } from './hud.js';
 import { hideAuth, applyTheme, bindAuth } from './auth.js';
 import { MockSocket }                     from './mock.js';
@@ -111,18 +111,38 @@ function route(pkt) {
     case 'combat':
       handleCombatPacket(pkt);
       document.getElementById('stat-npc-hp')?.classList.toggle('hidden', !pkt.stage);
+      // Open combat panel when entering ranged stage
+      if (pkt.stage === 'ranged' && window._prevCombatStage !== 'ranged' && window._prevCombatStage !== 'melee') {
+        openCombatPanel(pkt.npcId);
+      }
+      // Mark combat as ended
+      if (pkt.stage === 'idle' && window._prevCombatStage && window._prevCombatStage !== 'idle') {
+        closeCombatPanel();
+      }
+      window._prevCombatStage = pkt.stage;
       break;
 
     case 'system': {
-      const cls = pkt.msgType === 'hit'    ? 'll-hit'
-                : pkt.msgType === 'miss'   ? 'll-miss'
-                : pkt.msgType === 'event'  ? 'll-event'
-                : pkt.msgType === 'action' ? 'll-action'
+      const msgType = pkt.msgType;
+      const cls = msgType === 'hit-left'   ? 'll-hit-player'
+                : msgType === 'hit-right'  ? 'll-hit-player'
+                : msgType === 'hit-player' ? 'll-hit-player'
+                : msgType === 'hit-enemy'  ? 'll-hit-enemy'
+                : msgType === 'hit'        ? 'll-hit'
+                : msgType === 'miss'       ? 'll-miss'
+                : msgType === 'event'      ? 'll-event'
+                : msgType === 'action'     ? 'll-action'
                 : 'll-sys';
-      if (pkt.msgType === 'hit' || pkt.msgType === 'miss') {
-        const el = document.getElementById('log');
-        if (el) { const hr = document.createElement('div'); hr.className = 'll-sep'; el.appendChild(hr); }
+
+      // Route hit/miss to combat panel instead of main log
+      const isCombatMsg = ['hit-player','hit-right','hit-left','hit-enemy','hit','miss'].includes(msgType);
+      if (isCombatMsg) {
+        const side = (msgType === 'hit-enemy') ? 'enemy' : 'player';
+        logCombat(pkt.msg, side, msgType);
+        // Also add separator to main log? No — keep main log clean
+        break;
       }
+
       log(pkt.msg, cls);
       break;
     }
