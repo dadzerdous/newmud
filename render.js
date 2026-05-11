@@ -311,7 +311,7 @@ export function log(msg, cls) {
   }
   d.innerHTML = html;
   el.appendChild(d);
-  el.scrollTop = el.scrollHeight;
+  requestAnimationFrame(() => { el.scrollTop = el.scrollHeight; });
 }
 
 // ── CLEAR (on room change) ───────────────────────────────

@@ -673,7 +673,7 @@ html, body {
 .combat-body { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1px; }
 .combat-col {
   display: flex; flex-direction: column; gap: 2px;
-  max-height: 110px; overflow-y: auto;
+  height: 52px; overflow-y: auto;
   -webkit-overflow-scrolling: touch; padding: 0 5px;
 }
 .combat-col::-webkit-scrollbar { display: none; }
