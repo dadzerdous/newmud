@@ -727,3 +727,6 @@ html, body {
   background: #1e1a30; border: 1px solid rgba(150,120,255,0.3);
   border-radius: 6px; padding: 1px 8px; font-family: sans-serif;
 }
+
+/* ctx label → actions gap */
+#ctx-who { margin-bottom: 6px; display: block; }

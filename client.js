@@ -3,7 +3,7 @@
 // ════════════════════════════════════════
 
 import { renderRoom, log, clearRoom, restoreDiscovered, setTotalDiscoverable, setRoomEventCounts, showInventory, startTargeting, openCombatPanel, closeCombatPanel, logCombat } from './render.js';
-import { updateHUD, setHeld, setHands, updateCombatState, handleCombatPacket } from './hud.js';
+import { updateHUD, setHeld, setHands, updateCombatState, handleCombatPacket, resetCombatState } from './hud.js';
 import { hideAuth, applyTheme, bindAuth } from './auth.js';
 import { MockSocket }                     from './mock.js';
 
@@ -101,6 +101,11 @@ function route(pkt) {
       if (pkt.totalDiscoverable) setTotalDiscoverable(pkt.totalDiscoverable);
       setRoomEventCounts(pkt.totalEvents, pkt.eventsTriggered);
       renderRoom(pkt, selfName);
+      // Start ambient text timer if room has ambient texts
+      startAmbientTimer(pkt);
+      if (!pkt.combatStage || pkt.combatStage === 'idle' || pkt.combatStage === 'notice') {
+        resetCombatState();
+      }
       break;
 
     case 'wielding':
@@ -190,4 +195,19 @@ bindAuth(
 function setConn(txt) {
   const el = document.getElementById('hud-conn');
   if (el) el.textContent = txt;
+}
+
+// ── AMBIENT TEXT TIMER ────────────────────────────────────
+let _ambientTimer  = null;
+
+function startAmbientTimer(pkt) {
+  if (_ambientTimer) { clearInterval(_ambientTimer); _ambientTimer = null; }
+  const texts    = pkt.ambientTexts;
+  const interval = pkt.ambientInterval ?? 20000;
+  if (!texts?.length) return;
+  _ambientTimer = setInterval(() => {
+    if (window._prevCombatStage === 'melee' || window._prevCombatStage === 'ranged') return;
+    const msg = texts[Math.floor(Math.random() * texts.length)];
+    log(msg, 'll-ambient');
+  }, interval);
 }
