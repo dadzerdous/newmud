@@ -223,28 +223,46 @@ export function openHandCtx(itemId, otherHandItem) {
 
   const sendId = itemId.toLowerCase().replace(/\s+/g, '_');
 
-  // Get hand actions from item def, or fallback defaults
-  let handActions = def?.actions?.hand || ['look', 'use', 'throw', 'store', 'drop'];
+  let handActions = def?.actions?.hand
+    ? [...def.actions.hand]
+    : ['look', 'use', 'throw', 'store', 'drop'];
 
-  // Replace use/chop/etc with combine if other hand has an item
+  // Replace use with combine if other hand has item
   if (otherHandItem) {
     handActions = handActions.map(a =>
-      (a !== 'look' && a !== 'throw' && a !== 'store' && a !== 'drop') ? 'combine' : a
+      typeof a === 'string' && a !== 'look' && a !== 'throw' && a !== 'store' && a !== 'drop'
+        ? 'combine' : a
     );
   }
 
+  // Inject skill at front if available
+  const skills = def?.skills ?? [];
+  if (skills.length) {
+    const xp    = window._weaponXP?.[itemId] ?? 0;
+    const level = xp >= 200 ? 5 : xp >= 120 ? 4 : xp >= 60 ? 3 : xp >= 20 ? 2 : 1;
+    const skill = skills.find(s => level >= (s.minLevel ?? 1));
+    if (skill) {
+      const ready = Date.now() >= (window._skillCooldowns?.[itemId] ?? 0);
+      handActions.unshift({ type: 'skill', label: `${skill.emoji} ${skill.label}`, skillId: skill.id, ready });
+    }
+  }
+
   handActions.forEach(action => {
+    if (typeof action === 'object' && action.type === 'skill') {
+      const b = makeActionBtn(action.label, () => {
+        if (action.ready) window.sendText(`skill ${sendId} ${action.skillId}`);
+        closeCtx();
+      });
+      if (!action.ready) b.style.opacity = '0.4';
+      btns.appendChild(b);
+      return;
+    }
     const b = makeActionBtn(action, () => {
-      if (action === 'throw') {
-        window.sendText('throw ' + sendId);
-      } else if (action === 'combine') {
-        window.sendText('use ' + sendId);
-      } else if (action !== 'look' && action !== 'store' && action !== 'drop') {
-        // Custom action label (chop, use, etc) — send as use
-        window.sendText('use ' + sendId);
-      } else {
-        window.sendText(action + ' ' + sendId);
-      }
+      if (action === 'throw')        window.sendText('throw ' + sendId);
+      else if (action === 'combine') window.sendText('use ' + sendId);
+      else if (action === 'look' || action === 'store' || action === 'drop')
+                                     window.sendText(action + ' ' + sendId);
+      else                           window.sendText('use ' + sendId);
       closeCtx();
     });
     btns.appendChild(b);
@@ -658,70 +676,218 @@ function _renderQuestPanel() {
 }
 
 // ── INVENTORY DISPLAY ────────────────────────────────────
+// ── ITEM DETAIL CARD — rendered in log on look ────────────
+export function renderItemDetail(pkt) {
+  const el = document.getElementById('log');
+  if (!el) return;
+  const { itemId, def, flavour, weaponXP } = pkt;
+  if (!def) return;
+  const xp    = weaponXP ?? 0;
+  const level = xp >= 200 ? 5 : xp >= 120 ? 4 : xp >= 60 ? 3 : xp >= 20 ? 2 : 1;
+  const nextThresh = [0,20,60,120,200,999][level] ?? 999;
+  const prevThresh = [0,0,20,60,120,200][level] ?? 0;
+  const pct = level >= 5 ? 100 : Math.round(((xp - prevThresh) / (nextThresh - prevThresh)) * 100);
+  const skills = def.skills ?? [];
+  const skillRows = skills.map(s => {
+    const unlocked = level >= (s.minLevel ?? 1);
+    return unlocked
+      ? `<div class="idc-skill"><span class="idc-skill-emoji">${s.emoji}</span><div class="idc-skill-body"><div class="idc-skill-name">${s.label}</div><div class="idc-skill-desc">${s.description}</div><div class="idc-skill-cost">🔮 ${s.manaCost} mana · ${s.cooldownMs/1000}s cooldown</div></div></div>`
+      : `<div class="idc-skill locked"><span class="idc-skill-emoji" style="opacity:0.2">${s.emoji}</span><div class="idc-skill-body"><div class="idc-skill-name">${s.label}</div></div><div class="idc-lock">Lv ${s.minLevel}</div></div>`;
+  }).join('');
+  const xpBar = xp > 0 ? `<div class="idc-xp-label">${xp}xp · Lv${level}${level < 5 ? ' → ' + nextThresh + 'xp' : ' (max)'}</div><div class="idc-xp-bar"><div class="idc-xp-fill" style="width:${pct}%"></div></div>` : '';
+  const card = document.createElement('div');
+  card.className = 'll idc-card';
+  card.innerHTML = `
+    <div class="idc-header"><span class="idc-emoji">${def.emoji ?? ''}</span><div class="idc-title">${def.name ?? itemId}</div><div class="idc-cat">${def.category ?? ''}</div></div>
+    ${flavour ? `<div class="idc-flavour">${flavour}</div>` : ''}
+    ${xpBar}
+    <div class="idc-stats">
+      <div class="idc-stat"><div class="idc-stat-l">type</div><div class="idc-stat-v">${def.category ?? '—'}</div></div>
+      <div class="idc-stat"><div class="idc-stat-l">slot</div><div class="idc-stat-v">${def.slot ?? '—'}</div></div>
+      <div class="idc-stat"><div class="idc-stat-l">damage</div><div class="idc-stat-v">${def.baseDamage ?? (def.damage?.[0]?.amount ?? '—')}</div></div>
+      <div class="idc-stat"><div class="idc-stat-l">dmg type</div><div class="idc-stat-v">${def.damage?.[0]?.type ?? '—'}</div></div>
+    </div>
+    ${skills.length ? `<div class="idc-skills-title">skills</div>${skillRows}` : ''}
+  `;
+  el.appendChild(card);
+  el.scrollTop = el.scrollHeight;
+}
+
+// ── INVENTORY PANEL ──────────────────────────────────────
+let _invData     = null;
+let _invOpen     = false;
+let _invSelected = null;
+const PAGE_SIZE  = 5;
+
 export function showInventory(pkt) {
+  _invData = pkt;
+  if (_invOpen) _renderInvPanel();
+  else _openInvPanel();
+}
+
+export function toggleInventory() {
+  if (_invOpen) _closeInvPanel();
+  else if (_invData) _openInvPanel();
+}
+
+function _openInvPanel() {
+  _invOpen     = true;
+  _invSelected = null;
+  _ensureInvPanel();
+  _renderInvPanel();
+  document.getElementById('inv-panel')?.classList.remove('hidden');
+  document.getElementById('btn-bag')?.classList.add('active');
+}
+
+function _closeInvPanel() {
+  _invOpen     = false;
+  _invSelected = null;
+  document.getElementById('inv-panel')?.classList.add('hidden');
+  document.getElementById('btn-bag')?.classList.remove('active');
+}
+
+function _ensureInvPanel() {
+  if (document.getElementById('inv-panel')) return;
+  const panel = document.createElement('div');
+  panel.id = 'inv-panel';
+  panel.className = 'hidden';
+  panel.innerHTML = `
+    <div id="inv-header">
+      <span id="inv-title">Inventory</span>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span id="inv-page-label"></span>
+        <button id="inv-close">✕</button>
+      </div>
+    </div>
+    <div id="inv-action-bar" class="hidden"></div>
+    <div id="inv-scroll-wrap"><div id="inv-scroll-track"></div></div>
+    <div id="inv-dots"></div>
+  `;
+  const south = document.getElementById('dir-south');
+  south?.parentNode?.insertBefore(panel, south);
+  document.getElementById('inv-close').addEventListener('click', () => _closeInvPanel());
+}
+
+function _renderInvPanel() {
+  const pkt = _invData;
+  if (!pkt) return;
   const { hands, bag, items: defs } = pkt;
-  const logEl = document.getElementById('log');
-  if (!logEl) return;
 
-  const wrapper = document.createElement('div');
-  wrapper.className = 'll ll-sys';
+  const allItems = [];
+  if (hands.left)  allItems.push({ id: hands.left,  side: 'L', loc: 'hand' });
+  if (hands.right) allItems.push({ id: hands.right, side: 'R', loc: 'hand' });
+  bag.forEach(id  => allItems.push({ id, side: null, loc: 'bag' }));
 
-  const title = document.createElement('div');
-  title.textContent = 'You are carrying:';
-  title.style.marginBottom = '4px';
-  wrapper.appendChild(title);
+  const totalPages = Math.max(1, Math.ceil(allItems.length / PAGE_SIZE));
+  const pageLabel  = document.getElementById('inv-page-label');
+  if (pageLabel) pageLabel.textContent = totalPages > 1 ? `1 / ${totalPages}` : '';
 
-  function makeRow(itemId, label, actions) {
-    const def   = defs?.[itemId] || {};
-    const emoji = def.emoji || '';
-    const row   = document.createElement('div');
-    row.style.cssText = 'display:flex;align-items:center;gap:6px;margin:2px 0;';
+  const track = document.getElementById('inv-scroll-track');
+  if (!track) return;
+  track.innerHTML = '';
 
-    const name = document.createElement('span');
-    name.style.cssText = 'color:#f0c060;cursor:pointer;';
-    name.textContent = (emoji ? emoji + ' ' : '') + itemId + ' ';
+  for (let p = 0; p < totalPages; p++) {
+    const page      = document.createElement('div');
+    page.className  = 'inv-page';
+    const pageItems = allItems.slice(p * PAGE_SIZE, (p + 1) * PAGE_SIZE);
 
-    const sub = document.createElement('em');
-    sub.style.cssText = 'color:#5a5070;font-size:11px;';
-    sub.textContent = label;
-
-    row.appendChild(name);
-    row.appendChild(sub);
-
-    // Click the row to open ctx
-    row.addEventListener('click', e => {
-      e.stopPropagation();
-      _activeCtx = '__inv__';
-      document.querySelectorAll('.dchip').forEach(c => c.classList.remove('active'));
-      document.getElementById('ctx-who').textContent = itemId;
-
-      const btns = document.getElementById('ctx-btns');
-      btns.innerHTML = '';
-      const sendId = itemId.toLowerCase().replace(/\s+/g, '_');
-      actions.forEach(action => {
-        const b = makeActionBtn(action, () => {
-          window.sendText(action + ' ' + sendId);
-          closeCtx();
-        });
-        btns.appendChild(b);
+    pageItems.forEach(item => {
+      const def        = defs?.[item.id] || {};
+      const isSelected = _invSelected === item.id;
+      const slot       = document.createElement('div');
+      slot.className   = 'inv-slot'
+        + (item.side ? ' hand-item' : '')
+        + (def.glowClass === 'shiny' ? ' shiny' : '')
+        + (isSelected ? ' selected' : '');
+      slot.dataset.itemId = item.id;
+      slot.innerHTML = `
+        ${item.side ? `<span class="hand-badge">${item.side}</span>` : ''}
+        <span class="inv-emoji">${def.emoji || '❓'}</span>
+        <span class="inv-name">${def.name || item.id}</span>
+      `;
+      slot.addEventListener('click', () => {
+        if (_invSelected === item.id) {
+          _invSelected = null;
+          _renderActionBar(null, null, null, null);
+        } else {
+          _invSelected = item.id;
+          _renderActionBar(item.id, item.loc, item.side, def);
+        }
+        _renderInvPanel();
       });
-
-      document.getElementById('ctx').classList.remove('hidden');
+      page.appendChild(slot);
     });
 
-    return row;
+    for (let e = 0; e < PAGE_SIZE - pageItems.length; e++) {
+      const slot = document.createElement('div');
+      slot.className = 'inv-slot empty';
+      slot.innerHTML = `<span class="inv-emoji">·</span>`;
+      page.appendChild(slot);
+    }
+    track.appendChild(page);
   }
 
-  if (hands.left)  wrapper.appendChild(makeRow(hands.left,  '(left hand)',  defs?.[hands.left]?.actions?.hand      || ['look','drop','store']));
-  if (hands.right) wrapper.appendChild(makeRow(hands.right, '(right hand)', defs?.[hands.right]?.actions?.hand     || ['look','drop','store']));
-  bag.forEach(itemId => wrapper.appendChild(makeRow(itemId, '(bag)', defs?.[itemId]?.actions?.inventory || ['look','retrieve','drop'])));
-
-  if (!hands.left && !hands.right && bag.length === 0) {
-    wrapper.textContent = 'You are carrying nothing.';
+  const dots = document.getElementById('inv-dots');
+  if (dots) {
+    dots.innerHTML = '';
+    if (totalPages > 1) {
+      for (let p = 0; p < totalPages; p++) {
+        const d = document.createElement('div');
+        d.className = 'inv-dot' + (p === 0 ? ' active' : '');
+        dots.appendChild(d);
+      }
+      const wrap = document.getElementById('inv-scroll-wrap');
+      if (wrap) {
+        wrap.onscroll = () => {
+          const cur = Math.round(wrap.scrollLeft / wrap.clientWidth);
+          dots.querySelectorAll('.inv-dot').forEach((d, i) => d.classList.toggle('active', i === cur));
+          if (pageLabel) pageLabel.textContent = `${cur + 1} / ${totalPages}`;
+        };
+      }
+    }
   }
 
-  logEl.appendChild(wrapper);
-  logEl.scrollTop = logEl.scrollHeight;
+  requestAnimationFrame(() => {
+    const wrap = document.getElementById('inv-scroll-wrap');
+    if (!wrap) return;
+    document.querySelectorAll('.inv-page').forEach(p => { p.style.width = wrap.clientWidth + 'px'; });
+  });
+
+  if (_invSelected) {
+    const found = allItems.find(i => i.id === _invSelected);
+    if (found) _renderActionBar(found.id, found.loc, found.side, defs?.[found.id]);
+  }
+}
+
+function _renderActionBar(itemId, loc, side, def) {
+  const bar = document.getElementById('inv-action-bar');
+  if (!bar) return;
+  if (!itemId) { bar.classList.add('hidden'); bar.innerHTML = ''; return; }
+  bar.classList.remove('hidden');
+  const xp    = window._weaponXP?.[itemId] ?? 0;
+  const level = xp >= 200 ? 5 : xp >= 120 ? 4 : xp >= 60 ? 3 : xp >= 20 ? 2 : 1;
+  const sideLbl = side ? `${side} hand` : 'bag';
+  const xpStr   = xp > 0 ? ` · Lv${level} · ${xp}xp` : '';
+  const subText = `${sideLbl}${xpStr}${def?.category ? ' · ' + def.category : ''}`;
+  const sendId  = itemId.toLowerCase().replace(/\s+/g, '_');
+  const actions = loc === 'hand'
+    ? (def?.actions?.hand      || ['look','store','drop'])
+    : (def?.actions?.inventory || ['look','retrieve','drop']);
+  const skills     = def?.skills ?? [];
+  const skill      = skills.find(s => level >= (s.minLevel ?? 1));
+  const skillReady = skill && Date.now() >= (window._skillCooldowns?.[itemId] ?? 0);
+  let btnsHtml = '';
+  if (skill) btnsHtml += `<button class="inv-action-btn skill${skillReady ? '' : ' dim'}" data-cmd="skill ${sendId} ${skill.id}">${skill.emoji} ${skill.label}</button>`;
+  actions.forEach(a => {
+    btnsHtml += `<button class="inv-action-btn${a === 'drop' ? ' danger' : ''}" data-cmd="${a} ${sendId}">${a}</button>`;
+  });
+  bar.innerHTML = `
+    <div class="inv-action-who">${def?.emoji ?? '❓'} ${def?.name ?? itemId} <span class="inv-action-sub">${subText}</span></div>
+    <div class="inv-action-btns">${btnsHtml}</div>
+  `;
+  bar.querySelectorAll('.inv-action-btn').forEach(btn => {
+    btn.addEventListener('click', () => { window.sendText(btn.dataset.cmd); _closeInvPanel(); });
+  });
 }
 
 // ── TARGETING MODE ───────────────────────────────────────
