@@ -72,7 +72,8 @@ function renderDesc(data, objects) {
   const el = document.getElementById('room-desc');
 
   const lines = Array.isArray(data.desc) ? data.desc : [data.desc ?? ''];
-  let html = lines.join(' ');
+  // Join lines, converting ¶ prefix to paragraph break
+  let html = lines.map(l => l.startsWith('¶') ? '<br><br>' + l.slice(1) : l).join(' ');
 
   objects.forEach(obj => {
     const id    = obj.id ?? obj.name;
@@ -297,7 +298,7 @@ export function log(msg, cls) {
   if (!el) return;
   const d = document.createElement('div');
   d.className = 'll ' + (cls ?? 'll-sys');
-  let html = msg;
+  let html = msg.includes('\n') ? msg.replace(/\n/g, '<br>') : msg;
   // Only wrap player names if msg doesn't already contain HTML spans
   if (!msg.includes('<span') && _playersInRoom.size) {
     _playersInRoom.forEach(name => {

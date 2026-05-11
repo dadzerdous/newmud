@@ -137,6 +137,7 @@ function route(pkt) {
                 : msgType === 'miss'       ? 'll-miss'
                 : msgType === 'event'      ? 'll-event'
                 : msgType === 'action'     ? 'll-action'
+                : msgType === 'pre'        ? 'll-pre'
                 : 'll-sys';
 
       // Route hit/miss to combat panel instead of main log

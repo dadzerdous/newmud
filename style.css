@@ -730,3 +730,10 @@ html, body {
 
 /* ctx label → actions gap */
 #ctx-who { margin-bottom: 6px; display: block; }
+
+/* pre-formatted log text (ASCII art, sign etc) */
+.ll-pre {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 11px; color: #9a8ec0; line-height: 1.5;
+  white-space: pre;
+}
