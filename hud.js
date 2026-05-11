@@ -29,6 +29,7 @@ export function updateHUD(data) {
 // ── HANDS ────────────────────────────────────────────────
 export function setHands(hands) {
     _hands = hands ?? { left: null, right: null };
+    window._hands = _hands; // expose for combat panel headers
     if (!_hands.left)  { _wielding.left  = false; stopAtb('left');  }
     if (!_hands.right) { _wielding.right = false; stopAtb('right'); }
     renderHands();

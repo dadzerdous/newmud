@@ -670,20 +670,28 @@ html, body {
 .combat-panel-status { font-size: 10px; font-family: sans-serif; padding: 1px 8px; border-radius: 10px; }
 .cps-active { background: rgba(255,80,80,0.15); color: #ff6060; }
 .cps-over   { background: rgba(150,120,255,0.1); color: #6e6488; }
-.combat-body { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; min-height: 80px; max-height: 120px; }
-.combat-col { display: flex; flex-direction: column; gap: 2px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.combat-body { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1px; }
+.combat-col {
+  display: flex; flex-direction: column; gap: 2px;
+  max-height: 110px; overflow-y: auto;
+  -webkit-overflow-scrolling: touch; padding: 0 5px;
+}
 .combat-col::-webkit-scrollbar { display: none; }
-.combat-col-label { font-size: 9px; letter-spacing: 1px; text-transform: uppercase; font-family: sans-serif; margin-bottom: 3px; flex-shrink: 0; }
-.combat-col.col-enemy { border-right: 1px solid rgba(255,80,80,0.1); padding-right: 6px; }
-.combat-col.col-enemy .combat-col-label { color: rgba(255,80,80,0.5); }
-.combat-col.col-player .combat-col-label { color: rgba(150,120,255,0.5); }
-.combat-col.col-player { padding-left: 6px; }
-.clog-line { font-family: 'Courier New', monospace; font-size: 11px; line-height: 1.5; flex-shrink: 0; }
+.combat-col.col-left,
+.combat-col.col-right { border-left: 1px solid rgba(255,255,255,0.05); }
+.combat-col-label {
+  font-size: 9px; letter-spacing: 0.8px; text-transform: uppercase;
+  font-family: sans-serif; margin-bottom: 4px; flex-shrink: 0;
+  padding-bottom: 3px; border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.col-enemy .combat-col-label { color: rgba(255,80,80,0.6); }
+.col-left  .combat-col-label { color: rgba(150,120,255,0.6); }
+.col-right .combat-col-label { color: rgba(100,140,255,0.6); }
+.clog-line { font-family: 'Courier New', monospace; font-size: 11px; line-height: 1.4; flex-shrink: 0; }
 .clog-hit-enemy   { color: #cc2222; font-weight: bold; }
-.clog-miss-enemy  { color: #664400; font-style: italic; }
-.clog-hit-player  { color: #ff7777; }
-.clog-miss-player { color: #554444; font-style: italic; }
-.clog-event       { color: #aa88ff; font-style: italic; font-size: 10px; }
+.clog-miss-enemy  { color: #553333; font-style: italic; }
+.clog-hit-player  { color: #9a7aff; }
+.clog-miss-player { color: #443355; font-style: italic; }
 
 /* ══════════════════════════════════════
    HELP OVERLAY

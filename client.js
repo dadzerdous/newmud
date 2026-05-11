@@ -116,11 +116,9 @@ function route(pkt) {
     case 'combat':
       handleCombatPacket(pkt);
       document.getElementById('stat-npc-hp')?.classList.toggle('hidden', !pkt.stage);
-      // Open combat panel when entering ranged stage
       if (pkt.stage === 'ranged' && window._prevCombatStage !== 'ranged' && window._prevCombatStage !== 'melee') {
-        openCombatPanel(pkt.npcId);
+        openCombatPanel(pkt.npcId, pkt.npcEmoji);
       }
-      // Mark combat as ended
       if (pkt.stage === 'idle' && window._prevCombatStage && window._prevCombatStage !== 'idle') {
         closeCombatPanel();
       }
@@ -140,12 +138,18 @@ function route(pkt) {
                 : msgType === 'pre'        ? 'll-pre'
                 : 'll-sys';
 
-      // Route hit/miss to combat panel instead of main log
+      // Route hit/miss to combat panel as structured data
       const isCombatMsg = ['hit-player','hit-right','hit-left','hit-enemy','hit','miss'].includes(msgType);
       if (isCombatMsg) {
-        const side = (msgType === 'hit-enemy') ? 'enemy' : 'player';
-        logCombat(pkt.msg, side, msgType);
-        // Also add separator to main log? No — keep main log clean
+        const isEnemy = msgType === 'hit-enemy';
+        const isMiss  = msgType === 'miss';
+        const side    = isEnemy              ? 'enemy'
+                      : msgType === 'hit-right' ? 'right'
+                      : msgType === 'hit-left'  ? 'left'
+                      : isMiss && pkt.side === 'enemy' ? 'enemy'
+                      : isMiss ? 'left'
+                      : 'left';
+        logCombat(pkt.dmg, pkt.dmgType, side, isMiss);
         break;
       }
 

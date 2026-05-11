@@ -435,53 +435,80 @@ function esc(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
 // ── COMBAT LOG PANEL ─────────────────────────────────────
 let _combatPanelOpen = false;
 
-export function openCombatPanel(npcName) {
+// Damage type → emoji map
+const DMG_EMOJI = {
+  blunt:    '💥',
+  physical: '⚔️',
+  pierce:   '🩸',
+  slash:    '🗡️',
+  fire:     '🔥',
+  ice:      '❄️',
+  lightning:'⚡',
+  magic:    '✨',
+  poison:   '🧪',
+};
+
+export function openCombatPanel(npcName, npcEmoji) {
   _combatPanelOpen = true;
-  _ensureCombatPanel(npcName);
+  _ensureCombatPanel(npcName, npcEmoji);
   document.getElementById('combat-panel')?.classList.remove('hidden');
 }
 
 export function closeCombatPanel() {
-  // Don't actually remove — stays for review
-  // Just update status indicator
   const status = document.querySelector('.combat-panel-status');
   if (status) { status.textContent = 'ended'; status.className = 'combat-panel-status cps-over'; }
 }
 
-export function logCombat(msg, side, msgType) {
-  // side: 'enemy' | 'player' | 'event'
+// msg format: { dmg, dmgType, hand } for hits, or just 'miss' flag
+export function logCombat(dmg, dmgType, side, isMiss) {
+  // side: 'enemy' | 'left' | 'right'
   const colId = side === 'enemy' ? 'combat-col-enemy'
-               : side === 'player' ? 'combat-col-player'
-               : 'combat-col-enemy'; // events go left
+               : side === 'left'  ? 'combat-col-left'
+               : 'combat-col-right';
   const col = document.getElementById(colId);
   if (!col) return;
 
-  const cls = msgType === 'hit-enemy'   ? 'clog-hit-enemy'
-            : msgType === 'miss'        ? (side === 'enemy' ? 'clog-miss-enemy' : 'clog-miss-player')
-            : msgType === 'hit-player'  ? 'clog-hit-player'
-            : msgType === 'event'       ? 'clog-event'
-            : 'clog-event';
-
   const line = document.createElement('div');
-  line.className = `clog-line ${cls}`;
-  line.textContent = msg;
+  line.className = 'clog-line';
+
+  if (isMiss) {
+    line.classList.add(side === 'enemy' ? 'clog-miss-enemy' : 'clog-miss-player');
+    line.textContent = 'miss';
+  } else {
+    line.classList.add(side === 'enemy' ? 'clog-hit-enemy' : 'clog-hit-player');
+    const typeEmoji = DMG_EMOJI[dmgType] ?? '⚔️';
+    line.textContent = `HIT ${dmg} ${typeEmoji}`;
+  }
+
   col.appendChild(line);
   col.scrollTop = col.scrollHeight;
 }
 
-function _ensureCombatPanel(npcName) {
+function _ensureCombatPanel(npcName, npcEmoji) {
+  const npcLabel = `${npcEmoji ?? '👾'} ${npcName ?? 'enemy'}`;
   let panel = document.getElementById('combat-panel');
   if (panel) {
     // Reset for new combat
-    const enemy  = document.getElementById('combat-col-enemy');
-    const player = document.getElementById('combat-col-player');
-    if (enemy)  enemy.innerHTML  = `<div class="combat-col-label">${npcName ?? 'Enemy'}</div>`;
-    if (player) player.innerHTML = `<div class="combat-col-label">You</div>`;
+    const enemy = document.getElementById('combat-col-enemy');
+    const left  = document.getElementById('combat-col-left');
+    const right = document.getElementById('combat-col-right');
+    const lHand = window._hands?.left;
+    const rHand = window._hands?.right;
+    const lEmoji = lHand ? (window.worldItems?.[lHand]?.emoji ?? '✋') : '✋';
+    const rEmoji = rHand ? (window.worldItems?.[rHand]?.emoji ?? '🤚') : '🤚';
+    if (enemy) enemy.innerHTML = `<div class="combat-col-label">${npcLabel}</div>`;
+    if (left)  left.innerHTML  = `<div class="combat-col-label">${lEmoji} left</div>`;
+    if (right) right.innerHTML = `<div class="combat-col-label">${rEmoji} right</div>`;
     const status = panel.querySelector('.combat-panel-status');
     if (status) { status.textContent = 'active'; status.className = 'combat-panel-status cps-active'; }
     panel.classList.remove('hidden');
     return;
   }
+
+  const lHand  = window._hands?.left;
+  const rHand  = window._hands?.right;
+  const lEmoji = lHand ? (window.worldItems?.[lHand]?.emoji ?? '✋') : '✋';
+  const rEmoji = rHand ? (window.worldItems?.[rHand]?.emoji ?? '🤚') : '🤚';
 
   panel = document.createElement('div');
   panel.id = 'combat-panel';
@@ -496,15 +523,17 @@ function _ensureCombatPanel(npcName) {
     </div>
     <div class="combat-body">
       <div class="combat-col col-enemy" id="combat-col-enemy">
-        <div class="combat-col-label">${npcName ?? 'Enemy'}</div>
+        <div class="combat-col-label">${npcLabel}</div>
       </div>
-      <div class="combat-col col-player" id="combat-col-player">
-        <div class="combat-col-label">You</div>
+      <div class="combat-col col-left" id="combat-col-left">
+        <div class="combat-col-label">${lEmoji} left</div>
+      </div>
+      <div class="combat-col col-right" id="combat-col-right">
+        <div class="combat-col-label">${rEmoji} right</div>
       </div>
     </div>
   `;
 
-  // Insert before #dir-south
   const south = document.getElementById('dir-south');
   south?.parentNode?.insertBefore(panel, south);
 
