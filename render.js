@@ -73,7 +73,7 @@ function renderDesc(data, objects) {
 
   const lines = Array.isArray(data.desc) ? data.desc : [data.desc ?? ''];
   // Join lines, converting ¶ prefix to paragraph break
-  let html = lines.map(l => l.startsWith('¶') ? '<br><br>' + l.slice(1) : l).join(' ');
+  let html = lines.map(l => l.startsWith('¶') ? '<br>' + l.slice(1) : l).join(' ');
 
   objects.forEach(obj => {
     const id    = obj.id ?? obj.name;
