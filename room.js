@@ -286,13 +286,8 @@ function sendRoom(socket, id) {
         }
     }
 
-    // totalDiscoverable — use hardcoded value if defined, else calculate
-    const totalDiscoverable = room.totalDiscoverable ?? (() => {
-        let count = 0;
-        if (room.objects) count += Object.keys(room.objects).length;
-        if (room.ambient) count += Object.keys(room.ambient).length;
-        return count;
-    })();
+    // Use hardcoded totalDiscoverable if set, else calculate from room definition
+    const totalDiscoverable = calcTotalDiscoverable(room, id);
 
     // Build combatants list — visible NPCs with combatant:true
     const combatants = objectList.filter(o =>
@@ -312,9 +307,10 @@ function sendRoom(socket, id) {
             totalDiscoverable,
             combatants,
             combatStage:      sess.combatState?.stage ?? 'idle',
-            // Event tracking
             totalEvents:      room.totalEvents ?? 0,
             eventsTriggered:  acc?.eventsTriggered?.[id] ?? 0,
+            ambientTexts:     room.ambientTexts  ?? [],
+            ambientInterval:  room.ambientInterval ?? 20000,
         };
 
         console.log("📦 ROOM PAYLOAD:", {
@@ -326,9 +322,71 @@ function sendRoom(socket, id) {
 
         socket.send(JSON.stringify(payload));
         console.log("✅ ROOM SENT:", id);
+
+        // Mouse timer — schedule passive NPC appear/hide
+        if (room.mouseTimer) {
+            _scheduleMouse(id, room);
+        }
+
     } catch (err) {
         console.error("🔥 sendRoom() failed:", err);
     }
+}
+
+// ── MOUSE TIMER ───────────────────────────────────────────
+const _mouseTimers = {}; // roomId → { appear, hide }
+
+function _scheduleMouse(roomId, room) {
+    if (_mouseTimers[roomId]) return; // already scheduled
+    const cfg    = room.mouseTimer;
+    const npcKey = cfg.npcKey ?? 'mouse';
+
+    function cycle() {
+        _mouseTimers[roomId] = { appear: setTimeout(() => {
+            const obj = room.objects?.[npcKey];
+            if (obj && obj.state === 'hidden') {
+                obj.state = 'visible';
+                for (const [sock, sess] of Sessions.sessions.entries()) {
+                    if (sess.room === roomId && sess.state === 'ready') {
+                        const acc  = Accounts.data[sess.loginId];
+                        const race = acc?.race ?? 'human';
+                        const msg  = {
+                            goblin: 'A mouse scurries out of the bushes. It freezes when it sees you.',
+                            human:  'A mouse appears from the undergrowth, nose twitching.',
+                            elf:    'A mouse emerges from the brush. It sits very still.',
+                        }[race] ?? 'A mouse has appeared.';
+                        Sessions.sendSystem(sock, msg);
+                        sendRoom(sock, roomId);
+                    }
+                }
+            }
+            _mouseTimers[roomId].hide = setTimeout(() => {
+                const obj2 = room.objects?.[npcKey];
+                if (obj2 && obj2.state === 'visible') {
+                    obj2.state = 'hidden';
+                    for (const [sock, sess] of Sessions.sessions.entries()) {
+                        if (sess.room === roomId && sess.state === 'ready') {
+                            Sessions.sendSystem(sock, 'The mouse disappears back into the bushes.');
+                            sendRoom(sock, roomId);
+                        }
+                    }
+                }
+                _mouseTimers[roomId] = null;
+                cycle();
+            }, cfg.hideDelay ?? 35000);
+        }, cfg.appearDelay ?? 20000) };
+    }
+
+    cycle();
+}
+
+// ── TOTAL DISCOVERABLE ────────────────────────────────────
+function calcTotalDiscoverable(room, id) {
+    if (room.totalDiscoverable != null) return room.totalDiscoverable;
+    let count = 0;
+    if (room.objects) count += Object.keys(room.objects).length;
+    if (room.ambient) count += Object.keys(room.ambient).length;
+    return count;
 }
 
 function handleMove(socket, sess, cmd, arg) {
