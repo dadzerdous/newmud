@@ -9,6 +9,8 @@ let _objects           = {};  // id → object def for current room
 let _currentRoomId     = null;
 let _activeCtx         = null;
 let _totalDiscoverable = 0;
+let _totalEvents       = 0;
+let _eventsTriggered   = 0;
 let _playersInRoom     = new Set(); // names of other players currently here
 
 // ── RENDER ROOM ──────────────────────────────────────────
@@ -45,6 +47,8 @@ export function renderRoom(data, selfName) {
 
   // Discovery counter
   _totalDiscoverable = data.totalDiscoverable ?? 0;
+  _totalEvents       = data.totalEvents       ?? 0;
+  _eventsTriggered   = data.eventsTriggered   ?? 0;
   updateDiscoveryCounter();
 
   // Movement
@@ -309,11 +313,17 @@ function setZones(exits) {
 
 // ── DISCOVERY COUNTER ────────────────────────────────────
 function updateDiscoveryCounter() {
-  const found   = Object.values(_objects).filter(o => o.discovered && o.native !== false && !o.hidden).length;
+  const found   = Object.values(_objects).filter(o => o.discovered && o.native !== false).length;
   const label   = document.getElementById('discovered-label');
   const section = document.getElementById('discovered');
-  if (_totalDiscoverable > 0) {
-    if (label)   label.textContent = `Discovered  ${found}/${_totalDiscoverable}`;
+  if (_totalDiscoverable > 0 || _totalEvents > 0) {
+    let text = '';
+    if (_totalDiscoverable > 0) text += `Discovered ${found}/${_totalDiscoverable}`;
+    if (_totalEvents > 0) {
+      if (text) text += '  ·  ';
+      text += `Events ${_eventsTriggered}/${_totalEvents}`;
+    }
+    if (label)   label.textContent = text;
     if (section) section.classList.remove('hidden');
   }
 }
@@ -325,6 +335,12 @@ export function restoreDiscovered() {}
 
 export function setTotalDiscoverable(n) {
   _totalDiscoverable = n;
+  updateDiscoveryCounter();
+}
+
+export function setRoomEventCounts(totalEvents, eventsTriggered) {
+  _totalEvents     = totalEvents     ?? 0;
+  _eventsTriggered = eventsTriggered ?? 0;
   updateDiscoveryCounter();
 }
 
