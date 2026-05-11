@@ -478,6 +478,7 @@ function _ensureCombatPanel(npcName) {
     if (player) player.innerHTML = `<div class="combat-col-label">You</div>`;
     const status = panel.querySelector('.combat-panel-status');
     if (status) { status.textContent = 'active'; status.className = 'combat-panel-status cps-active'; }
+    panel.classList.remove('hidden');
     return;
   }
 
@@ -487,7 +488,10 @@ function _ensureCombatPanel(npcName) {
   panel.innerHTML = `
     <div class="combat-panel-header">
       <div class="combat-panel-title">Combat</div>
-      <div class="combat-panel-status cps-active">active</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="combat-panel-status cps-active">active</div>
+        <button class="combat-panel-close" id="combat-close">✕</button>
+      </div>
     </div>
     <div class="combat-body">
       <div class="combat-col col-enemy" id="combat-col-enemy">
@@ -502,6 +506,10 @@ function _ensureCombatPanel(npcName) {
   // Insert before #dir-south
   const south = document.getElementById('dir-south');
   south?.parentNode?.insertBefore(panel, south);
+
+  document.getElementById('combat-close').addEventListener('click', () => {
+    document.getElementById('combat-panel')?.classList.add('hidden');
+  });
 }
 
 // ── PLAYER CHIP ───────────────────────────────────────────

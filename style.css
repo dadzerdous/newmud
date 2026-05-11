@@ -721,3 +721,9 @@ html, body {
 /* log hit colors */
 .ll-hit-player { color: #ff7777; }
 .ll-hit-enemy  { color: #cc2222; font-weight: bold; text-shadow: 0 0 6px rgba(180,0,0,0.35); }
+
+.combat-panel-close {
+  font-size: 11px; color: #9a7aff; cursor: pointer;
+  background: #1e1a30; border: 1px solid rgba(150,120,255,0.3);
+  border-radius: 6px; padding: 1px 8px; font-family: sans-serif;
+}

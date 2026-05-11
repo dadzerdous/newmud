@@ -70,12 +70,9 @@ function resetRoom(roomId, triggerSocket) {
     if (room.items) room.items = room.items.filter(i => !i.originRoom || i.originRoom === roomId);
     ensureAmbientItems(room);
 
-    // Reset NPC visibility — re-hide all objects that have a state field
-    // room.objects is where NPCs live, not room.npcs (which doesn't exist)
-    if (room.objects) {
-        for (const obj of Object.values(room.objects)) {
-            if ('state' in obj) obj.state = 'hidden';
-        }
+    // Reset NPC state (future combat)
+    if (room.npcs) {
+        room.npcs.forEach(npc => { npc.state = 'idle'; });
     }
 
     // Notify players in room
@@ -289,9 +286,7 @@ function sendRoom(socket, id) {
         }
     }
 
-    // totalDiscoverable — use hardcoded value if room defines it (for event-spawned items
-    // like the fake_coin in forest-g3 that aren't in objects or ambient),
-    // otherwise calculate from room template definition
+    // totalDiscoverable — use hardcoded value if defined, else calculate
     const totalDiscoverable = room.totalDiscoverable ?? (() => {
         let count = 0;
         if (room.objects) count += Object.keys(room.objects).length;
@@ -317,6 +312,9 @@ function sendRoom(socket, id) {
             totalDiscoverable,
             combatants,
             combatStage:      sess.combatState?.stage ?? 'idle',
+            // Event tracking
+            totalEvents:      room.totalEvents ?? 0,
+            eventsTriggered:  acc?.eventsTriggered?.[id] ?? 0,
         };
 
         console.log("📦 ROOM PAYLOAD:", {
@@ -328,25 +326,6 @@ function sendRoom(socket, id) {
 
         socket.send(JSON.stringify(payload));
         console.log("✅ ROOM SENT:", id);
-
-        // Auto-notice: if room has a visible aggressive NPC and player is not already in combat,
-        // trigger npcNotice after a short delay (so room renders first)
-        const cs = sess.combatState;
-        const alreadyFighting = cs && cs.stage !== 'idle';
-        if (!alreadyFighting && room.objects) {
-            for (const [npcKey, obj] of Object.entries(room.objects)) {
-                if (obj.state !== 'hidden' && obj.aggressive === true) {
-                    setTimeout(() => {
-                        if (socket.readyState !== 1) return;
-                        try {
-                            const Combat = require('../commands/combat');
-                            Combat.npcNotice(socket, sess, npcKey);
-                        } catch(e) { console.error('[AGGRO]', e); }
-                    }, 800);
-                    break; // one NPC at a time
-                }
-            }
-        }
     } catch (err) {
         console.error("🔥 sendRoom() failed:", err);
     }
@@ -376,14 +355,6 @@ function handleMove(socket, sess, cmd, arg) {
     acc.lastRoom = newRoom;
     Accounts.save();
     Sessions.broadcastToRoomExcept(newRoom, `${actor} enters from ${oppositeDirection(dir)}.`, socket);
-    // Refresh room for players already here so they see the new arrival
-    Sessions.broadcastRoomToOthers(newRoom, socket, sendRoom);
-
-    // If player was in Notice stage, clear it — they left the room
-    try {
-        const Combat = require('../commands/combat');
-        Combat.onPlayerMove(sess);
-    } catch(e) {}
 
     // Reset scheduling — cancel for room being entered, schedule for room being left
     // (only schedule if no players remain)
